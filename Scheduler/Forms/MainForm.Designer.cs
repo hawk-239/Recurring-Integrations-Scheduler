@@ -593,6 +593,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.Name = "MainForm";
             this.Text = "Recurring Integrations Scheduler";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Manager_FormClosing);
+            this.Load += new System.EventHandler(this.MainForm_Load);
             this.mainMenuToolStrip.ResumeLayout(false);
             this.mainMenuToolStrip.PerformLayout();
             this.statusStrip.ResumeLayout(false);

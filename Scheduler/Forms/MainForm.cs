@@ -27,14 +27,19 @@ namespace RecurringIntegrationsScheduler.Forms
             log4net.Config.XmlConfigurator.Configure();
         }
 
+        public void MainForm_Load(object sender, EventArgs e)
+        {
+            var timer = new Timer { Interval = 1000 };
+            timer.Tick += (s, args) => RefreshGrid();
+            timer.Start();
+        }
+        
         private void RefreshGrid()
         {
             try
             {
                 if (Scheduler.Instance.GetScheduler() == null)
                     return;
-
-                Cursor = Cursors.WaitCursor;
 
                 var jobsTable = Scheduler.Instance.GetJobs();
                 if (jobsTable == null) return;
@@ -58,7 +63,6 @@ namespace RecurringIntegrationsScheduler.Forms
             }
             finally
             {
-                Cursor = Cursors.Default;
                 saveScheduleButton.Enabled = jobsDataGridView.RowCount > 0;
                 contextMenuStrip1.Enabled = jobsDataGridView.RowCount > 0;
             }
