@@ -141,6 +141,7 @@ namespace RecurringIntegrationsScheduler
                 table.Columns.Add("PreviousFireTime");
                 table.Columns.Add("Instance");
 
+                var executingJobs = GetScheduler().GetCurrentlyExecutingJobs().Result;
                 var jobGroups = GetScheduler().GetJobGroupNames().Result;
                 foreach (var group in jobGroups)
                 {
@@ -168,7 +169,7 @@ namespace RecurringIntegrationsScheduler
                                 row["PreviousFireTime"] =
                                     TimeZone.CurrentTimeZone.ToLocalTime(previousFireTime.Value.DateTime);
                             var status = GetScheduler().GetTriggerState(triggers.First().Key).Result.ToString();
-                            if (status == "Blocked") 
+                            if (status == "Blocked" || executingJobs.Any(j => Equals(j.JobDetail.Key, jobKey)))
                                 status = "Executing";
                             row["JobStatus"] = status;
                         }

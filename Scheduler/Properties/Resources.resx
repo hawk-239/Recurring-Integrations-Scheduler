@@ -897,4 +897,10 @@ Default example above means: Each working day of the week (MON-FRI) run every 15
   <data name="URL_for_GetExportedPackageUrl_action_is_missing" xml:space="preserve">
     <value>URL for GetExportedPackageUrl action is missing</value>
   </data>
+  <data name="Job_is_already_running" xml:space="preserve">
+    <value>Job is already running</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
 </root>

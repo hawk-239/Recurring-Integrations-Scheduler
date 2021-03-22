@@ -954,7 +954,16 @@ namespace RecurringIntegrationsScheduler.Properties {
                 return ResourceManager.GetString("Entity_name_for_this_data_job_configured_in_Dynamics", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        internal static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+                
         /// <summary>
         ///   Looks up a localized string similar to Errors.
         /// </summary>
@@ -1322,6 +1331,15 @@ namespace RecurringIntegrationsScheduler.Properties {
         internal static string Job_groups {
             get {
                 return ResourceManager.GetString("Job_groups", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Job is already running.
+        /// </summary>
+        internal static string Job_is_already_running {
+            get {
+                return ResourceManager.GetString("Job_is_already_running", resourceCulture);
             }
         }
         

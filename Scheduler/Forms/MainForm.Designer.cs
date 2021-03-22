@@ -79,6 +79,8 @@ namespace RecurringIntegrationsScheduler.Forms
             this.resumeAllJobsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.refreshButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
+            this.runJobMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.runJobButton = new System.Windows.Forms.ToolStripButton();
             this.mainMenuToolStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.jobsDataGridView)).BeginInit();
@@ -274,6 +276,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.contextMenuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.editJobMenuItem,
+            this.runJobMenuItem,
             this.pauseJobMenuItem,
             this.resumeJobToolStripMenuItem1,
             this.deletJobMenuItem,
@@ -372,6 +375,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.addJobsDropDownButton,
             this.deleteJobButton,
             this.editJobButton,
+            this.runJobButton,
             this.pauseResumeDropDownButton,
             this.refreshButton});
             this.jobsToolStrip.Location = new System.Drawing.Point(0, 526);
@@ -523,6 +527,23 @@ namespace RecurringIntegrationsScheduler.Forms
             this.toolStripButton1.Name = "toolStripButton1";
             this.toolStripButton1.Size = new System.Drawing.Size(24, 24);
             // 
+            // runJobMenuItem
+            // 
+            this.runJobMenuItem.Name = "runJobMenuItem";
+            this.runJobMenuItem.Size = new System.Drawing.Size(304, 24);
+            this.runJobMenuItem.Text = "Run job";
+            this.runJobMenuItem.Click += new System.EventHandler(this.RunJobButton_Click);
+            // 
+            // runJobButton
+            // 
+            this.runJobButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.runJobButton.Enabled = false;
+            this.runJobButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.runJobButton.Name = "runJobButton";
+            this.runJobButton.Size = new System.Drawing.Size(64, 24);
+            this.runJobButton.Text = "Run job";
+            this.runJobButton.Click += new System.EventHandler(this.RunJobButton_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
@@ -599,5 +620,7 @@ namespace RecurringIntegrationsScheduler.Forms
         private System.Windows.Forms.ToolStripMenuItem addDownloadJobMenuItem;
         private System.Windows.Forms.ToolStripMenuItem addImportJobMenuItem;
         private System.Windows.Forms.ToolStripMenuItem addExportJobMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem runJobMenuItem;
+        private System.Windows.Forms.ToolStripButton runJobButton;
     }
 }

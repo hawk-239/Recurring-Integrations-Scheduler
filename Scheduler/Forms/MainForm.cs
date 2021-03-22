@@ -94,6 +94,7 @@ namespace RecurringIntegrationsScheduler.Forms
 
             deleteJobButton.Enabled = true;
             editJobButton.Enabled = true;
+            runJobButton.Enabled = true;
             pauseResumeDropDownButton.Enabled = true;
             instanceFilter.Enabled = true;
             jobNameFilter.Enabled = true;
@@ -633,6 +634,7 @@ namespace RecurringIntegrationsScheduler.Forms
             {
                 deleteJobButton.Enabled = false;
                 editJobButton.Enabled = false;
+                runJobButton.Enabled = false;
                 pauseResumeDropDownButton.Enabled = false;
             }
         }
@@ -1006,6 +1008,38 @@ namespace RecurringIntegrationsScheduler.Forms
                 {
                     MessageBox.Show(ex.Message, Resources.Unexpected_error);
                 }
+            }
+        }
+
+        private void RunJobButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var selectedRow = jobsDataGridView.Rows[jobsDataGridView.SelectedCells[0].RowIndex];
+                var jobKey = new JobKey(Convert.ToString(selectedRow.Cells["JobName"].Value),
+                    Convert.ToString(selectedRow.Cells["JobGroup"].Value));
+
+                var scheduler = Scheduler.Instance.GetScheduler();
+                if (scheduler == null)
+                {
+                    MessageBox.Show(Resources.No_active_scheduler, Resources.Missing_scheduler);
+                    return;
+                }
+
+                var executingJobs = scheduler.GetCurrentlyExecutingJobs().Result;
+
+                if (executingJobs.Any(j => j.JobDetail.Key.Equals(jobKey)))
+                {
+                    MessageBox.Show(Resources.Job_is_already_running, Resources.Error);
+                    return;
+                }
+
+                scheduler.TriggerJob(jobKey);
+                RefreshGrid();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, Resources.Unexpected_error);
             }
         }
     }
