@@ -380,6 +380,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.addJobsDropDownButton,
             this.deleteJobButton,
             this.editJobButton,
+			this.toolStripSeparator2,
             this.runJobButton,
             this.stopJobButton,
             this.pauseResumeDropDownButton,
