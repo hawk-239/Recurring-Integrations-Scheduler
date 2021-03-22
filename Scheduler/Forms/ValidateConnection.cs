@@ -8,6 +8,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -93,7 +94,7 @@ namespace RecurringIntegrationsScheduler.Forms
             {
                 var response = Task.Run(async () =>
                 {
-                    var result = await httpClientHelper.GetRequestAsync(new Uri(settings.AosUri));
+                    var result = await httpClientHelper.GetRequestAsync(new Uri(settings.AosUri), true, CancellationToken.None);
                     return result;
                 });
                 response.Wait();
@@ -112,7 +113,7 @@ namespace RecurringIntegrationsScheduler.Forms
                 var checkAccess = httpClientHelper.GetDequeueUri();
                 var checkAccessResponse = Task.Run(async () =>
                 {
-                    var result = await httpClientHelper.GetRequestAsync(checkAccess);
+                    var result = await httpClientHelper.GetRequestAsync(checkAccess, true, CancellationToken.None);
                     return result;
                 });
                 checkAccessResponse.Wait();

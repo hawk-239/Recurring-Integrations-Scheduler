@@ -14,7 +14,9 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
+using Polly.Retry;
 
 namespace RecurringIntegrationsScheduler.Job
 {
@@ -68,6 +70,11 @@ namespace RecurringIntegrationsScheduler.Job
         private Policy _retryPolicyForIo;
 
         /// <summary>
+        /// Retry policy for async IO operations
+        /// </summary>
+        private AsyncPolicy _retryPolicyForAsyncIo;
+
+        /// <summary>
         /// Called by the <see cref="T:Quartz.IScheduler" /> when a <see cref="T:Quartz.ITrigger" />
         /// fires that is associated with the <see cref="T:Quartz.IJob" />.
         /// </summary>
@@ -105,16 +112,28 @@ namespace RecurringIntegrationsScheduler.Job
                         Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key, exception.Message));
                     });
 
+                _retryPolicyForAsyncIo = Policy.Handle<IOException>().WaitAndRetryAsync(
+                    retryCount: _settings.RetryCount,
+                    sleepDurationProvider: attempt => TimeSpan.FromSeconds(_settings.RetryDelay),
+                    onRetry: (exception, calculatedWaitDuration) =>
+                    {
+                        Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key, exception.Message));
+                    });
+
                 if (_settings.LogVerbose || Log.IsDebugEnabled)
                 {
                     Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_starting, _context.JobDetail.Key));
                 }
-                await Process();
+                await Process(context.CancellationToken);
 
                 if (_settings.LogVerbose || Log.IsDebugEnabled)
                 {
                     Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_ended, _context.JobDetail.Key));
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                Log.InfoFormat(CultureInfo.InvariantCulture, string.Format(Common.Properties.Resources.Job_0_cancelled, _context.JobDetail.Key));
             }
             catch (Exception ex)
             {
@@ -142,8 +161,9 @@ namespace RecurringIntegrationsScheduler.Job
         /// <summary>
         /// Processes this instance.
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
-        private async Task Process()
+        private async Task Process(CancellationToken cancellationToken)
         {
             DownloadQueue = new ConcurrentQueue<DataMessage>();
             _httpClientHelper = new HttpClientHelper(_settings);
@@ -154,7 +174,8 @@ namespace RecurringIntegrationsScheduler.Job
 
             while (contentPresent)
             {
-                var response = await _httpClientHelper.GetRequestAsync(_dequeueUri);
+                var response = await _httpClientHelper.GetRequestAsync(_dequeueUri, true, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
 
                 switch (response.StatusCode)
                 {
@@ -189,7 +210,7 @@ namespace RecurringIntegrationsScheduler.Job
             if (!DownloadQueue.IsEmpty)
             {
                 Log.InfoFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Dequeued_1_file, _context.JobDetail.Key, DownloadQueue.Count));
-                await ProcessDownloadQueue();
+                await ProcessDownloadQueue(cancellationToken);
             }
         }
 
@@ -197,16 +218,18 @@ namespace RecurringIntegrationsScheduler.Job
         /// Processes download queue by downloading each
         /// file to download success location.
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>
         /// Task object for continuation
         /// </returns>
         /// <exception cref="System.Exception"></exception>
-        private async Task ProcessDownloadQueue()
+        private async Task ProcessDownloadQueue(CancellationToken cancellationToken)
         {
             var fileCount = 0;
             while (DownloadQueue.TryDequeue(out DataMessage dataMessage))
             {
-                var response = await _httpClientHelper.GetRequestAsync(new UriBuilder(dataMessage.DownloadLocation).Uri);
+                var response = await _httpClientHelper.GetRequestAsync(new UriBuilder(dataMessage.DownloadLocation).Uri, true, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -220,6 +243,8 @@ namespace RecurringIntegrationsScheduler.Job
                     }
                     fileCount++;
 
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     //Downloaded file has no file name. We need to create it.
                     //It will be timestamp followed by number in this download batch.
                     var fileName = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss-ffff}-{fileCount:D6}";
@@ -229,17 +254,19 @@ namespace RecurringIntegrationsScheduler.Job
                     dataMessage.Name = fileName;
                     dataMessage.MessageStatus = MessageStatus.Succeeded;
 
-                    _retryPolicyForIo.Execute(() => FileOperationsHelper.Create(downloadedStream, dataMessage.FullPath));
+                    await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.CreateAsync(downloadedStream, dataMessage.FullPath, ct), cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
                 if (_settings.LogVerbose || Log.IsDebugEnabled)
                 {
                     Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_File_1_was_downloaded, _context.JobDetail.Key, dataMessage.FullPath.Replace(@"{", @"{{").Replace(@"}", @"}}")));
                 }
-                await AcknowledgeDownload(dataMessage);
+                await AcknowledgeDownload(dataMessage, cancellationToken);
 
                 if (_settings.UnzipPackage)
                 {
-                    _retryPolicyForIo.Execute(() => FileOperationsHelper.UnzipPackage(dataMessage.FullPath, _settings.DeletePackage, _settings.AddTimestamp));
+                    await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.UnzipPackageAsync(dataMessage.FullPath, _settings.DeletePackage, _settings.AddTimestamp, ct), cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
                 }
             }
         }
@@ -248,12 +275,14 @@ namespace RecurringIntegrationsScheduler.Job
         /// Acknowledges the download.
         /// </summary>
         /// <param name="dataMessage">The data message.</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
-        private async Task AcknowledgeDownload(DataMessage dataMessage)
+        private async Task AcknowledgeDownload(DataMessage dataMessage, CancellationToken cancellationToken)
         {
             var content = JsonConvert.SerializeObject((DequeueResponse) dataMessage);
 
-            var response = await _httpClientHelper.PostStringRequestAsync(_acknowledgeDownloadUri, content);
+            var response = await _httpClientHelper.PostStringRequestAsync(_acknowledgeDownloadUri, content, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
             if (response.IsSuccessStatusCode)
             {

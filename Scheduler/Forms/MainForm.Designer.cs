@@ -81,6 +81,10 @@ namespace RecurringIntegrationsScheduler.Forms
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.runJobMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runJobButton = new System.Windows.Forms.ToolStripButton();
+            this.stopJobMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stopJobButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.mainMenuToolStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.jobsDataGridView)).BeginInit();
@@ -277,6 +281,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.editJobMenuItem,
             this.runJobMenuItem,
+            this.stopJobMenuItem,
             this.pauseJobMenuItem,
             this.resumeJobToolStripMenuItem1,
             this.deletJobMenuItem,
@@ -376,7 +381,9 @@ namespace RecurringIntegrationsScheduler.Forms
             this.deleteJobButton,
             this.editJobButton,
             this.runJobButton,
+            this.stopJobButton,
             this.pauseResumeDropDownButton,
+            this.toolStripSeparator3,
             this.refreshButton});
             this.jobsToolStrip.Location = new System.Drawing.Point(0, 526);
             this.jobsToolStrip.Name = "jobsToolStrip";
@@ -544,6 +551,33 @@ namespace RecurringIntegrationsScheduler.Forms
             this.runJobButton.Text = "Run job";
             this.runJobButton.Click += new System.EventHandler(this.RunJobButton_Click);
             // 
+            // stopJobMenuItem
+            // 
+            this.stopJobMenuItem.Name = "stopJobMenuItem";
+            this.stopJobMenuItem.Size = new System.Drawing.Size(304, 24);
+            this.stopJobMenuItem.Text = "Stop job";
+            this.stopJobMenuItem.Click += new System.EventHandler(this.StopJobButton_Click);
+            // 
+            // stopJobButton
+            // 
+            this.stopJobButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.stopJobButton.Enabled = false;
+            this.stopJobButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.stopJobButton.Name = "stopJobButton";
+            this.stopJobButton.Size = new System.Drawing.Size(70, 24);
+            this.stopJobButton.Text = "Stop job";
+            this.stopJobButton.Click += new System.EventHandler(this.StopJobButton_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 27);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 27);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
@@ -622,5 +656,9 @@ namespace RecurringIntegrationsScheduler.Forms
         private System.Windows.Forms.ToolStripMenuItem addExportJobMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runJobMenuItem;
         private System.Windows.Forms.ToolStripButton runJobButton;
+        private System.Windows.Forms.ToolStripMenuItem stopJobMenuItem;
+        private System.Windows.Forms.ToolStripButton stopJobButton;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
     }
 }

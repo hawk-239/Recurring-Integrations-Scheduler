@@ -12,7 +12,9 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using Polly.Retry;
 
 namespace RecurringIntegrationsScheduler.Job
 {
@@ -44,9 +46,9 @@ namespace RecurringIntegrationsScheduler.Job
         private IJobExecutionContext _context;
 
         /// <summary>
-        /// Retry policy for IO operations
+        /// Retry policy for async IO operations
         /// </summary>
-        private Policy _retryPolicyForIo;
+        private AsyncPolicy _retryPolicyForAsyncIo;
 
         /// <summary>
         /// Called by the <see cref="T:Quartz.IScheduler" /> when a <see cref="T:Quartz.ITrigger" />
@@ -73,28 +75,38 @@ namespace RecurringIntegrationsScheduler.Job
                 if (_settings.IndefinitePause)
                 {
                     await context.Scheduler.PauseJob(context.JobDetail.Key);
-                    Log.InfoFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_was_paused_indefinitely, _context.JobDetail.Key));
+                    Log.InfoFormat(CultureInfo.InvariantCulture,
+                        string.Format(Resources.Job_0_was_paused_indefinitely, _context.JobDetail.Key));
                     return;
                 }
 
-                _retryPolicyForIo = Policy.Handle<IOException>().WaitAndRetry(
+                _retryPolicyForAsyncIo = Policy.Handle<IOException>().WaitAndRetryAsync(
                     retryCount: _settings.RetryCount,
                     sleepDurationProvider: attempt => TimeSpan.FromSeconds(_settings.RetryDelay),
                     onRetry: (exception, calculatedWaitDuration) =>
                     {
-                        Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key, exception.Message));
+                        Log.WarnFormat(CultureInfo.InvariantCulture,
+                            string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key,
+                                exception.Message));
                     });
 
                 if (_settings.LogVerbose || Log.IsDebugEnabled)
                 {
-                    Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_starting, _context.JobDetail.Key));
+                    Log.DebugFormat(CultureInfo.InvariantCulture,
+                        string.Format(Resources.Job_0_starting, _context.JobDetail.Key));
                 }
-                await Process();
+
+                await Process(context.CancellationToken);
 
                 if (_settings.LogVerbose || Log.IsDebugEnabled)
                 {
-                    Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_ended, _context.JobDetail.Key));
+                    Log.DebugFormat(CultureInfo.InvariantCulture,
+                        string.Format(Resources.Job_0_ended, _context.JobDetail.Key));
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                Log.InfoFormat(CultureInfo.InvariantCulture, string.Format(Common.Properties.Resources.Job_0_cancelled, _context.JobDetail.Key));
             }
             catch (Exception ex)
             {
@@ -122,19 +134,21 @@ namespace RecurringIntegrationsScheduler.Job
         /// Processes this instance.
         /// </summary>
         /// <returns></returns>
-        private async Task Process()
+        private async Task Process(CancellationToken cancellationToken)
         {
             using (_httpClientHelper = new HttpClientHelper(_settings))
             {
                 var executionId = $"{_settings.DataProject}-{DateTime.Now:yyyy-MM-dd_HH-mm-ss}-{Guid.NewGuid()}";
                 
-                var responseExportToPackage = await _httpClientHelper.ExportToPackage(_settings.DataProject, executionId, executionId, _settings.Company);
+                var responseExportToPackage = await _httpClientHelper.ExportToPackageAsync(_settings.DataProject, executionId, executionId, _settings.Company, cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (!responseExportToPackage.IsSuccessStatusCode)
                 {
                     throw new JobExecutionException($@"Job: {_settings.JobKey}. ExportToPackage request failed.");
                 }
-
+                
                 string executionStatus;
                 var attempt = 0;
                 do
@@ -145,7 +159,12 @@ namespace RecurringIntegrationsScheduler.Job
                     }
                     attempt++;
 
-                    var responseGetExecutionSummaryStatus = await _httpClientHelper.GetExecutionSummaryStatus(executionId);
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    var responseGetExecutionSummaryStatus = await _httpClientHelper.GetExecutionSummaryStatusAsync(executionId, cancellationToken);
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (!responseGetExecutionSummaryStatus.IsSuccessStatusCode)
                     {
                         throw new JobExecutionException($@"Job: {_settings.JobKey}. GetExecutionSummaryStatus request failed.");
@@ -175,7 +194,12 @@ namespace RecurringIntegrationsScheduler.Job
                         }
                         attempt++;
 
-                        packageUrlResponse = await _httpClientHelper.GetExportedPackageUrl(executionId);
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        packageUrlResponse = await _httpClientHelper.GetExportedPackageUrlAsync(executionId, cancellationToken);
+
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         if (!packageUrlResponse.IsSuccessStatusCode)
                         {
                             throw new JobExecutionException($"Job: {_context.JobDetail.Key}. GetExportedPackageUrl request failed.");
@@ -191,13 +215,21 @@ namespace RecurringIntegrationsScheduler.Job
                     }
                     while (string.IsNullOrEmpty(HttpClientHelper.ReadResponseString(packageUrlResponse)));
 
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     var packageUri = new Uri(HttpClientHelper.ReadResponseString(packageUrlResponse));             
-                    var response = await _httpClientHelper.GetRequestAsync(packageUri, false);
+                    var response = await _httpClientHelper.GetRequestAsync(packageUri, false, cancellationToken);
+
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (!response.IsSuccessStatusCode)
                     {
                         throw new JobExecutionException(string.Format(Resources.Job_0_Download_failure_1, _context.JobDetail.Key, string.Format($"Status: {response.StatusCode}. Message: {response.Content}")));
                     }
+
                     using Stream downloadedStream = await response.Content.ReadAsStreamAsync();
+
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     var fileName = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss-ffff}.zip";
                     var dataMessage = new DataMessage()
@@ -206,11 +238,14 @@ namespace RecurringIntegrationsScheduler.Job
                         Name = fileName,
                         MessageStatus = MessageStatus.Succeeded
                     };
-                    _retryPolicyForIo.Execute(() => FileOperationsHelper.Create(downloadedStream, dataMessage.FullPath));
+
+                    await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.CreateAsync(downloadedStream, dataMessage.FullPath, ct), cancellationToken);
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     if (_settings.UnzipPackage)
                     {
-                        _retryPolicyForIo.Execute(() => FileOperationsHelper.UnzipPackage(dataMessage.FullPath, _settings.DeletePackage, _settings.AddTimestamp));
+                        await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.UnzipPackageAsync(dataMessage.FullPath, _settings.DeletePackage, _settings.AddTimestamp, ct), cancellationToken);
+                        cancellationToken.ThrowIfCancellationRequested();
                     }
                 }
                 else if (executionStatus == "Unknown" || executionStatus == "Failed" || executionStatus == "Canceled")

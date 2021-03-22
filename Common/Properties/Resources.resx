@@ -237,4 +237,7 @@
   <data name="no_separator" xml:space="preserve">
     <value>Job is configured to get target legal entity from file name, but no separator was configured.</value>
   </data>
+  <data name="Job_0_cancelled" xml:space="preserve">
+    <value>Job: {0} was cancelled.</value>
+  </data>
 </root>

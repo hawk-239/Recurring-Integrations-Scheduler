@@ -15,8 +15,10 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using Polly.Retry;
 
 namespace RecurringIntegrationsScheduler.Job
 {
@@ -56,6 +58,11 @@ namespace RecurringIntegrationsScheduler.Job
         private ConcurrentQueue<DataMessage> EnqueuedJobs { get; set; }
 
         private StreamWriter _streamWriter;
+
+        /// <summary>
+        /// Retry policy for async IO operations
+        /// </summary>
+        private AsyncPolicy _retryPolicyForAsyncIo;
 
         /// <summary>
         /// Retry policy for IO operations
@@ -100,11 +107,19 @@ namespace RecurringIntegrationsScheduler.Job
                         Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key, exception.Message));
                     });
 
+                _retryPolicyForAsyncIo = Policy.Handle<IOException>().WaitAndRetryAsync(
+                    retryCount: _settings.RetryCount,
+                    sleepDurationProvider: attempt => TimeSpan.FromSeconds(_settings.RetryDelay),
+                    onRetry: (exception, calculatedWaitDuration) =>
+                    {
+                        Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key, exception.Message));
+                    });
+
                 if (_settings.LogVerbose || Log.IsDebugEnabled)
                 {
                     Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_starting, _context.JobDetail.Key));
                 }
-                await Process();
+                await Process(context.CancellationToken);
 
                 if (_settings.LogVerbose || Log.IsDebugEnabled)
                 {
@@ -136,8 +151,9 @@ namespace RecurringIntegrationsScheduler.Job
         /// <summary>
         /// Processes this instance.
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
-        private async Task Process()
+        private async Task Process(CancellationToken cancellationToken)
         {
             EnqueuedJobs = new ConcurrentQueue<DataMessage>();
             foreach (var dataMessage in FileOperationsHelper.GetStatusFiles(MessageStatus.InProcess, _settings.UploadSuccessDir, "*" + _settings.StatusFileExtension))
@@ -151,15 +167,16 @@ namespace RecurringIntegrationsScheduler.Job
 
             if (!EnqueuedJobs.IsEmpty)
             {
-                await ProcessEnqueuedQueue();
+                await ProcessEnqueuedQueue(cancellationToken);
             }
         }
 
         /// <summary>
         /// Process enqueued files
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
-        private async Task ProcessEnqueuedQueue()
+        private async Task ProcessEnqueuedQueue(CancellationToken cancellationToken)
         {
             var fileCount = 0;
             _httpClientHelper = new HttpClientHelper(_settings);
@@ -173,7 +190,7 @@ namespace RecurringIntegrationsScheduler.Job
                 fileCount++;
 
                 // Check status for current item with message id - item.Key
-                var responseGetExecutionSummaryStatus = await _httpClientHelper.GetExecutionSummaryStatus(dataMessage.MessageId);
+                var responseGetExecutionSummaryStatus = await _httpClientHelper.GetExecutionSummaryStatusAsync(dataMessage.MessageId, cancellationToken);
                 if(!responseGetExecutionSummaryStatus.IsSuccessStatusCode)
                 {
                     throw new JobExecutionException($@"Job: {_settings.JobKey}. GetExecutionSummaryStatus request failed.");
@@ -183,7 +200,7 @@ namespace RecurringIntegrationsScheduler.Job
                 // If status was found and is not null,
                 if (jobStatusDetail != null)
                 {
-                    await PostProcessMessage(jobStatusDetail, dataMessage);
+                    await PostProcessMessage(jobStatusDetail, dataMessage, cancellationToken);
                 }
             }
         }
@@ -194,7 +211,8 @@ namespace RecurringIntegrationsScheduler.Job
         /// </summary>
         /// <param name="executionStatus">Execution status</param>
         /// <param name="dataMessage">Name of the file whose status is being processed</param>
-        private async Task PostProcessMessage(string executionStatus, DataMessage dataMessage)
+        /// <param name="cancellationToken">Cancellation token</param>
+        private async Task PostProcessMessage(string executionStatus, DataMessage dataMessage, CancellationToken cancellationToken)
         {
             if (_settings.LogVerbose || Log.IsDebugEnabled)
             {
@@ -207,7 +225,7 @@ namespace RecurringIntegrationsScheduler.Job
                         // Move message file and delete processing status file
                         var processingSuccessDestination = dataMessage.FullPath.Replace(_settings.UploadSuccessDir, _settings.ProcessingSuccessDir);
                         _retryPolicyForIo.Execute(() => FileOperationsHelper.MoveDataToTarget(dataMessage.FullPath, processingSuccessDestination, true, _settings.StatusFileExtension));
-                        await CreateLinkToExecutionSummaryPage(dataMessage.MessageId, processingSuccessDestination);
+                        await CreateLinkToExecutionSummaryPage(dataMessage.MessageId, processingSuccessDestination, cancellationToken);
                     }
                     break;
                 case "Unknown":
@@ -217,7 +235,7 @@ namespace RecurringIntegrationsScheduler.Job
                     {
                         var processingErrorDestination = dataMessage.FullPath.Replace(_settings.UploadSuccessDir, _settings.ProcessingErrorsDir);
                         _retryPolicyForIo.Execute(() => FileOperationsHelper.MoveDataToTarget(dataMessage.FullPath, processingErrorDestination, true, _settings.StatusFileExtension));
-                        await CreateLinkToExecutionSummaryPage(dataMessage.MessageId, processingErrorDestination);
+                        await CreateLinkToExecutionSummaryPage(dataMessage.MessageId, processingErrorDestination, cancellationToken);
                         if (_settings.GetImportTargetErrorKeysFile)
                         {
                             if (_settings.LogVerbose || Log.IsDebugEnabled)
@@ -236,14 +254,14 @@ namespace RecurringIntegrationsScheduler.Job
                                 {
                                     Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Checking_for_error_keys_for_data_entity_1, _context.JobDetail.Key, entity));
                                 }
-                                var errorsExistResponse = await _httpClientHelper.GenerateImportTargetErrorKeysFile(dataMessage.MessageId, entity);
+                                var errorsExistResponse = await _httpClientHelper.GenerateImportTargetErrorKeysFileAsync(dataMessage.MessageId, entity, cancellationToken);
                                 if (errorsExistResponse.IsSuccessStatusCode && Convert.ToBoolean(HttpClientHelper.ReadResponseString(errorsExistResponse)))
                                 {
                                     var errorFileUrl = string.Empty;
                                     HttpResponseMessage errorFileUrlResponse;
                                     do
                                     {
-                                        errorFileUrlResponse = await _httpClientHelper.GetImportTargetErrorKeysFileUrl(dataMessage.MessageId, entity);
+                                        errorFileUrlResponse = await _httpClientHelper.GetImportTargetErrorKeysFileUrlAsync(dataMessage.MessageId, entity, cancellationToken);
                                         if(errorFileUrlResponse.IsSuccessStatusCode)
                                         {
                                             errorFileUrl = HttpClientHelper.ReadResponseString(errorFileUrlResponse);
@@ -255,7 +273,7 @@ namespace RecurringIntegrationsScheduler.Job
                                     }
                                     while (errorFileUrlResponse.IsSuccessStatusCode && string.IsNullOrEmpty(errorFileUrl));
 
-                                    var response = await _httpClientHelper.GetRequestAsync(new UriBuilder(errorFileUrl).Uri, false);
+                                    var response = await _httpClientHelper.GetRequestAsync(new UriBuilder(errorFileUrl).Uri, false, cancellationToken);
                                     if (response.IsSuccessStatusCode)
                                     {
                                         using Stream downloadedStream = await response.Content.ReadAsStreamAsync();
@@ -267,7 +285,7 @@ namespace RecurringIntegrationsScheduler.Job
                                             Name = errorsFileName,
                                             MessageStatus = MessageStatus.Failed
                                         };
-                                        _retryPolicyForIo.Execute(() => FileOperationsHelper.Create(downloadedStream, dataMessageForErrorsFile.FullPath));
+                                        await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.CreateAsync(downloadedStream, dataMessageForErrorsFile.FullPath, ct), cancellationToken);
                                     }
                                     else
                                     {
@@ -286,7 +304,7 @@ Error file URL: {errorFileUrl}");
                             {
                                 Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Trying_to_download_execution_errors, _context.JobDetail.Key));
                             }
-                            var response = await _httpClientHelper.GetExecutionErrors(dataMessage.MessageId);
+                            var response = await _httpClientHelper.GetExecutionErrors(dataMessage.MessageId, cancellationToken);
                             if (response.IsSuccessStatusCode)
                             {
                                 using Stream downloadedStream = await response.Content.ReadAsStreamAsync();
@@ -298,7 +316,7 @@ Error file URL: {errorFileUrl}");
                                     Name = errorsFileName,
                                     MessageStatus = MessageStatus.Failed
                                 };
-                                _retryPolicyForIo.Execute(() => FileOperationsHelper.Create(downloadedStream, dataMessageForErrorsFile.FullPath));
+                                await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.CreateAsync(downloadedStream, dataMessageForErrorsFile.FullPath, ct), cancellationToken);
                             }
                             else
                             {
@@ -315,7 +333,7 @@ Message Id: {dataMessage.MessageId}");
             }
         }
 
-        private async Task CreateLinkToExecutionSummaryPage(string messageId, string filePath)
+        private async Task CreateLinkToExecutionSummaryPage(string messageId, string filePath, CancellationToken cancellationToken)
         {
             var directoryName = Path.GetDirectoryName(filePath);
             if (directoryName == null)
@@ -323,7 +341,7 @@ Message Id: {dataMessage.MessageId}");
 
             var logFilePath = Path.Combine(directoryName, Path.GetFileNameWithoutExtension(filePath) + ".url");
 
-            var linkUrl = await _httpClientHelper.GetExecutionSummaryPageUrl(messageId);
+            var linkUrl = await _httpClientHelper.GetExecutionSummaryPageUrlAsync(messageId, cancellationToken);
 
             using (_streamWriter = new StreamWriter(logFilePath))
             {

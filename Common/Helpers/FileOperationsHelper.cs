@@ -12,6 +12,8 @@ using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RecurringIntegrationsScheduler.Common.Helpers
 {
@@ -60,8 +62,9 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// </summary>
         /// <param name="sourceStream">Source stream</param>
         /// <param name="filePath">Target file path</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Boolean with operation result</returns>
-        public static void Create(Stream sourceStream, string filePath)
+        public static async Task CreateAsync(Stream sourceStream, string filePath, CancellationToken cancellationToken)
         {
             var targetDirectoryName = Path.GetDirectoryName(filePath);
             if (targetDirectoryName == null)
@@ -70,7 +73,7 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
             Directory.CreateDirectory(targetDirectoryName);
             using var fileStream = File.Create(filePath);
             sourceStream.Seek(0, SeekOrigin.Begin);
-            sourceStream.CopyTo(fileStream);
+            await sourceStream.CopyToAsync(fileStream, 81920, cancellationToken);
         }
 
         /// <summary>
@@ -191,8 +194,9 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// <param name="filePath">File path of data package</param>
         /// <param name="deletePackage">Flag whether to delete zip file</param>
         /// <param name="addTimestamp">Flag whether to add timestamp to extracted file name</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Boolean with operation result</returns>
-        public static void UnzipPackage(string filePath, bool deletePackage, bool addTimestamp = false)
+        public static async Task UnzipPackageAsync(string filePath, bool deletePackage, bool addTimestamp, CancellationToken cancellationToken)
         {
             if (File.Exists(filePath))
             {
@@ -200,6 +204,8 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
                 {
                     foreach (var entry in zip.Entries)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         if ((entry.Length == 0) || (entry.FullName == "Manifest.xml") ||
                             (entry.FullName == "PackageHeader.xml"))
                             continue;
@@ -213,7 +219,13 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
                         else
                             fileName = Path.Combine(Path.GetDirectoryName(filePath) ?? throw new InvalidOperationException(), entry.FullName);
 
-                        entry.ExtractToFile(fileName, !addTimestamp);
+                        if (File.Exists(fileName) && addTimestamp) 
+                            continue;
+
+                        using var zipStream = entry.Open();
+                        using var fileStream = new FileStream(fileName, FileMode.Create);
+                        await zipStream.CopyToAsync(fileStream, 81920, cancellationToken);
+
                     }
                 }
                 if (deletePackage)
@@ -267,7 +279,8 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// </summary>
         /// <param name="dataMessage">dataMessage object</param>
         /// <param name="statusFileExtension">Status file extension</param>
-        public static void WriteStatusFile(DataMessage dataMessage, string statusFileExtension = ".Status")
+        /// <param name="cancellationToken">Cancellation token</param>
+        public static async Task WriteStatusFileAsync(DataMessage dataMessage, string statusFileExtension, CancellationToken cancellationToken)
         {
             if (dataMessage == null)
             {
@@ -276,7 +289,7 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
             var statusData = JsonConvert.SerializeObject(dataMessage, Formatting.Indented, new StringEnumConverter());
 
             using var statusFileMemoryStream = new MemoryStream(Encoding.Default.GetBytes(statusData));
-            Create(statusFileMemoryStream, Path.Combine(Path.GetDirectoryName(dataMessage.FullPath) ?? throw new InvalidOperationException(), Path.GetFileNameWithoutExtension(dataMessage.FullPath) + statusFileExtension));
+            await CreateAsync(statusFileMemoryStream, Path.Combine(Path.GetDirectoryName(dataMessage.FullPath) ?? throw new InvalidOperationException(), Path.GetFileNameWithoutExtension(dataMessage.FullPath) + statusFileExtension), cancellationToken);
         }
 
         /// <summary>
@@ -285,7 +298,8 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// <param name="targetDataMessage">target dataMessage object</param>
         /// <param name="httpResponse">httpResponse object</param>
         /// <param name="statusFileExtension">Status file extension</param>
-        public static void WriteStatusLogFile(DataMessage targetDataMessage, HttpResponseMessage httpResponse, string statusFileExtension = ".Status")
+        /// <param name="cancellationToken">Cancellation token</param>
+        public static async Task WriteStatusLogFileAsync(DataMessage targetDataMessage, HttpResponseMessage httpResponse, string statusFileExtension, CancellationToken cancellationToken)
         {
             if (targetDataMessage == null || httpResponse == null)
             {
@@ -295,7 +309,7 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
             var logData = JsonConvert.SerializeObject(httpResponse, Formatting.Indented, new StringEnumConverter());
 
             using var logMemoryStream = new MemoryStream(Encoding.Default.GetBytes(logData));
-            Create(logMemoryStream, logFilePath);
+            await CreateAsync(logMemoryStream, logFilePath, cancellationToken);
         }
 
         /// <summary>
@@ -305,7 +319,8 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// <param name="targetDataMessage">target dataMessage object</param>
         /// <param name="httpResponse">httpResponse object</param>
         /// <param name="statusFileExtension">Status file extension</param>
-        public static void WriteStatusLogFile(DataJobStatusDetail jobStatusDetail, DataMessage targetDataMessage, HttpResponseMessage httpResponse, string statusFileExtension = ".Status")
+        /// <param name="cancellationToken">Cancellation token</param>
+        public static async Task WriteStatusLogFileAsync(DataJobStatusDetail jobStatusDetail, DataMessage targetDataMessage, HttpResponseMessage httpResponse, string statusFileExtension, CancellationToken cancellationToken)
         {
             if (targetDataMessage == null)
             {
@@ -328,7 +343,7 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
             }
 
             using var logMemoryStream = new MemoryStream(Encoding.Default.GetBytes(logData));
-            Create(logMemoryStream, logFilePath);
+            await CreateAsync(logMemoryStream, logFilePath, cancellationToken);
         }
     }
 }

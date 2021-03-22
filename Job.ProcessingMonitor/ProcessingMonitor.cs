@@ -14,7 +14,9 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using Polly.Retry;
 
 namespace RecurringIntegrationsScheduler.Job
 {
@@ -59,6 +61,11 @@ namespace RecurringIntegrationsScheduler.Job
         private Policy _retryPolicyForIo;
 
         /// <summary>
+        /// Retry policy for async IO operations
+        /// </summary>
+        private AsyncPolicy _retryPolicyForAsyncIo;
+
+        /// <summary>
         /// Called by the <see cref="T:Quartz.IScheduler" /> when a <see cref="T:Quartz.ITrigger" />
         /// fires that is associated with the <see cref="T:Quartz.IJob" />.
         /// </summary>
@@ -96,11 +103,19 @@ namespace RecurringIntegrationsScheduler.Job
                         Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key, exception.Message));
                     });
 
+                _retryPolicyForAsyncIo = Policy.Handle<IOException>().WaitAndRetryAsync(
+                    retryCount: _settings.RetryCount,
+                    sleepDurationProvider: attempt => TimeSpan.FromSeconds(_settings.RetryDelay),
+                    onRetry: (exception, calculatedWaitDuration) =>
+                    {
+                        Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key, exception.Message));
+                    });
+
                 if (_settings.LogVerbose || Log.IsDebugEnabled)
                 {
                     Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_starting, _context.JobDetail.Key));
                 }
-                await Process();
+                await Process(context.CancellationToken);
 
                 if (_settings.LogVerbose || Log.IsDebugEnabled)
                 {
@@ -132,8 +147,9 @@ namespace RecurringIntegrationsScheduler.Job
         /// <summary>
         /// Processes this instance.
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
-        private async Task Process()
+        private async Task Process(CancellationToken cancellationToken)
         {
             EnqueuedJobs = new ConcurrentQueue<DataMessage>();
             foreach (var dataMessage in FileOperationsHelper.GetStatusFiles(MessageStatus.InProcess, _settings.UploadSuccessDir, "*" + _settings.StatusFileExtension))
@@ -147,15 +163,16 @@ namespace RecurringIntegrationsScheduler.Job
 
             if (!EnqueuedJobs.IsEmpty)
             {
-                await ProcessEnqueuedQueue();
+                await ProcessEnqueuedQueue(cancellationToken);
             }
         }
 
         /// <summary>
         /// Process enqueued files
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
-        private async Task ProcessEnqueuedQueue()
+        private async Task ProcessEnqueuedQueue(CancellationToken cancellationToken)
         {
             var fileCount = 0;
             _httpClientHelper = new HttpClientHelper(_settings);
@@ -169,12 +186,12 @@ namespace RecurringIntegrationsScheduler.Job
                 fileCount++;
 
                 // Check status for current item with message id - item.Key
-                var jobStatusDetail = await GetStatus(dataMessage.MessageId);
+                var jobStatusDetail = await GetStatus(dataMessage.MessageId, cancellationToken);
 
                 // If status was found and is not null,
                 if (jobStatusDetail != null)
                 {
-                    await PostProcessMessage(jobStatusDetail, dataMessage);
+                    await PostProcessMessage(jobStatusDetail, dataMessage, cancellationToken);
                 }
             }
         }
@@ -185,7 +202,8 @@ namespace RecurringIntegrationsScheduler.Job
         /// </summary>
         /// <param name="jobStatusDetail">DataJobStatusDetail object</param>
         /// <param name="dataMessage">Name of the file whose status is being processed</param>
-        private async Task PostProcessMessage(DataJobStatusDetail jobStatusDetail, DataMessage dataMessage)
+        /// <param name="cancellationToken">Cancellation token</param>
+        private async Task PostProcessMessage(DataJobStatusDetail jobStatusDetail, DataMessage dataMessage, CancellationToken cancellationToken)
         {
             if (jobStatusDetail?.DataJobStatus == null)
             {
@@ -193,7 +211,7 @@ namespace RecurringIntegrationsScheduler.Job
             }
             dataMessage.DataJobState = jobStatusDetail.DataJobStatus.DataJobState;
 
-            _retryPolicyForIo.Execute(() => FileOperationsHelper.WriteStatusFile(dataMessage, _settings.StatusFileExtension));
+            await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.WriteStatusFileAsync(dataMessage, _settings.StatusFileExtension, ct), cancellationToken);
 
             switch (dataMessage.DataJobState)
             {
@@ -214,7 +232,7 @@ namespace RecurringIntegrationsScheduler.Job
                         MessageStatus = MessageStatus.Failed
                     };
                     _retryPolicyForIo.Execute(() => FileOperationsHelper.MoveDataToTarget(dataMessage.FullPath, targetDataMessage.FullPath));
-                    _retryPolicyForIo.Execute(() => FileOperationsHelper.WriteStatusLogFile(jobStatusDetail, targetDataMessage, null, _settings.StatusFileExtension));
+                    await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.WriteStatusLogFileAsync(jobStatusDetail, targetDataMessage, null, _settings.StatusFileExtension, ct), cancellationToken);
 
                     if (_settings.GetExecutionErrors)
                     {
@@ -222,7 +240,7 @@ namespace RecurringIntegrationsScheduler.Job
                         {
                             Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Trying_to_download_execution_errors, _context.JobDetail.Key));
                         }
-                        var response = await _httpClientHelper.GetExecutionErrors(dataMessage.MessageId);
+                        var response = await _httpClientHelper.GetExecutionErrors(dataMessage.MessageId, cancellationToken);
                         if (!response.IsSuccessStatusCode)
                         {
                             throw new JobExecutionException(string.Format(Resources.Job_0_download_of_execution_errors_failed_1, _context.JobDetail.Key, string.Format($"Status: {response.StatusCode}. Message: {response.Content}")));
@@ -236,7 +254,7 @@ namespace RecurringIntegrationsScheduler.Job
                             Name = errorsFileName,
                             MessageStatus = MessageStatus.Failed
                         };
-                        _retryPolicyForIo.Execute(() => FileOperationsHelper.Create(downloadedStream, dataMessageForErrorsFile.FullPath));
+                        await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.CreateAsync(downloadedStream, dataMessageForErrorsFile.FullPath, ct), cancellationToken);
                     }
                 }
                 break;
@@ -248,13 +266,14 @@ namespace RecurringIntegrationsScheduler.Job
         /// MessageId
         /// </summary>
         /// <param name="message">Correlation identifier for the submitted job returned as the Enqueue response</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>
         /// DataJobStatusDetail object that includes detailed job status
         /// </returns>
-        private async Task<DataJobStatusDetail> GetStatus(string message)
+        private async Task<DataJobStatusDetail> GetStatus(string message, CancellationToken cancellationToken)
         {
             //send a request to get the message status
-            var response = await _httpClientHelper.GetRequestAsync(_httpClientHelper.GetJobStatusUri(message));
+            var response = await _httpClientHelper.GetRequestAsync(_httpClientHelper.GetJobStatusUri(message), true, cancellationToken);
 
             if (response.IsSuccessStatusCode)
             {

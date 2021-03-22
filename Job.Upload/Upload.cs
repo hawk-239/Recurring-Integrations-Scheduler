@@ -12,6 +12,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RecurringIntegrationsScheduler.Job
@@ -57,6 +58,11 @@ namespace RecurringIntegrationsScheduler.Job
         private Policy _retryPolicyForIo;
 
         /// <summary>
+        /// Retry policy for async IO operations
+        /// </summary>
+        private AsyncPolicy _retryPolicyForAsyncIo;
+
+        /// <summary>
         /// Called by the <see cref="T:Quartz.IScheduler" /> when a <see cref="T:Quartz.ITrigger" />
         /// fires that is associated with the <see cref="T:Quartz.IJob" />.
         /// </summary>
@@ -94,16 +100,28 @@ namespace RecurringIntegrationsScheduler.Job
                         Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key, exception.Message));
                     });
 
+                _retryPolicyForAsyncIo = Policy.Handle<IOException>().WaitAndRetryAsync(
+                    retryCount: _settings.RetryCount,
+                    sleepDurationProvider: attempt => TimeSpan.FromSeconds(_settings.RetryDelay),
+                    onRetry: (exception, calculatedWaitDuration) =>
+                    {
+                        Log.WarnFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Retrying_IO_operation_Exception_1, _context.JobDetail.Key, exception.Message));
+                    });
+
                 if (_settings.LogVerbose || Log.IsDebugEnabled)
                 {
                     Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_starting, _context.JobDetail.Key));
                 }
-                await Process();
+                await Process(context.CancellationToken);
 
                 if (_settings.LogVerbose || Log.IsDebugEnabled)
                 {
                     Log.DebugFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_ended, _context.JobDetail.Key));
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                Log.InfoFormat(CultureInfo.InvariantCulture, string.Format(Common.Properties.Resources.Job_0_cancelled, _context.JobDetail.Key));
             }
             catch (Exception ex)
             {
@@ -131,8 +149,9 @@ namespace RecurringIntegrationsScheduler.Job
         /// <summary>
         /// Processes this instance.
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
-        private async Task Process()
+        private async Task Process(CancellationToken cancellationToken)
         {
             InputQueue = new ConcurrentQueue<DataMessage>();
 
@@ -149,17 +168,18 @@ namespace RecurringIntegrationsScheduler.Job
             if (!InputQueue.IsEmpty)
             {
                 Log.InfoFormat(CultureInfo.InvariantCulture, string.Format(Resources.Job_0_Found_1_file_s_in_input_folder, _context.JobDetail.Key, InputQueue.Count));
-                await ProcessInputQueue();
+                await ProcessInputQueue(cancellationToken);
             }
         }
 
         /// <summary>
         /// Processes input queue
         /// </summary>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>
         /// Task object for continuation
         /// </returns>
-        private async Task ProcessInputQueue()
+        private async Task ProcessInputQueue(CancellationToken cancellationToken)
         {
             using (_httpClientHelper = new HttpClientHelper(_settings))
             {
@@ -175,6 +195,8 @@ namespace RecurringIntegrationsScheduler.Job
                         }
                         fileCount++;
 
+                        cancellationToken.ThrowIfCancellationRequested();
+                        
                         var sourceStream = _retryPolicyForIo.Execute(() => FileOperationsHelper.Read(dataMessage.FullPath, FileShare.None));
                         if (sourceStream == null) continue;//Nothing to do here
 
@@ -188,6 +210,8 @@ namespace RecurringIntegrationsScheduler.Job
                         var response = await _httpClientHelper.PostStreamRequestAsync(_httpClientHelper.GetEnqueueUri(), sourceStream, dataMessage.Name);
                         sourceStream.Close();
                         sourceStream.Dispose();
+
+                        cancellationToken.ThrowIfCancellationRequested();
 
                         if (response.IsSuccessStatusCode)
                         {
@@ -203,7 +227,9 @@ namespace RecurringIntegrationsScheduler.Job
                             _retryPolicyForIo.Execute(() => FileOperationsHelper.Move(dataMessage.FullPath, targetDataMessage.FullPath));
 
                             if (_settings.ProcessingJobPresent)
-                                _retryPolicyForIo.Execute(() => FileOperationsHelper.WriteStatusFile(targetDataMessage, _settings.StatusFileExtension));
+                                await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.WriteStatusFileAsync(targetDataMessage, _settings.StatusFileExtension, ct), cancellationToken);
+
+                            cancellationToken.ThrowIfCancellationRequested();
 
                             if (_settings.LogVerbose || Log.IsDebugEnabled)
                             {
@@ -225,7 +251,8 @@ namespace RecurringIntegrationsScheduler.Job
                             _retryPolicyForIo.Execute(() => FileOperationsHelper.Move(dataMessage.FullPath, targetDataMessage.FullPath));
 
                             // Save the log with enqueue failure details
-                            _retryPolicyForIo.Execute(() => FileOperationsHelper.WriteStatusLogFile(targetDataMessage, response, _settings.StatusFileExtension));
+                            await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.WriteStatusLogFileAsync(targetDataMessage, response, _settings.StatusFileExtension, ct), cancellationToken);
+                            cancellationToken.ThrowIfCancellationRequested();
                         }
                     }
                     catch (Exception ex)

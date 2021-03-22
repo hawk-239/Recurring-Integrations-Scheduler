@@ -13,6 +13,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using UrlCombineLib;
@@ -114,19 +115,13 @@ externalidentifier: {externalidentifier}");
         /// </summary>
         /// <param name="uri">Request Uri</param>
         /// <param name="bodyString">Body string</param>
-        /// <param name="externalidentifier">Activity Message context</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>HTTP response</returns>
-        public async Task<HttpResponseMessage> PostStringRequestAsync(Uri uri, string bodyString, string externalidentifier = null)
+        public async Task<HttpResponseMessage> PostStringRequestAsync(Uri uri, string bodyString, CancellationToken cancellationToken)
         {
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Authorization", await _authenticationHelper.GetValidAuthenticationHeader());
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            // Add external correlation id header if specified and valid
-            if (!string.IsNullOrEmpty(externalidentifier))
-            {
-                _httpClient.DefaultRequestHeaders.Add("x-ms-dyn-externalidentifier", externalidentifier);
-            }
 
             if (bodyString != null)
             {
@@ -138,9 +133,9 @@ Uri: {uri.AbsoluteUri},
 Parameters:
 
 bodyString: {bodyString},
-externalidentifier: {externalidentifier}");
+externalidentifier: ");
                 }
-                return await _httpClient.PostAsync(uri, new StringContent(bodyString, Encoding.UTF8, "application/json"));
+                return await _httpClient.PostAsync(uri, new StringContent(bodyString, Encoding.UTF8, "application/json"), cancellationToken);
             }
             else
             {
@@ -158,8 +153,9 @@ externalidentifier: {externalidentifier}");
         /// </summary>
         /// <param name="uri">Request Uri</param>
         /// <param name="addAuthorization">Add authorization header</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Http response</returns>
-        public async Task<HttpResponseMessage> GetRequestAsync(Uri uri, bool addAuthorization = true)
+        public async Task<HttpResponseMessage> GetRequestAsync(Uri uri, bool addAuthorization, CancellationToken cancellationToken)
         {
             _httpClient.DefaultRequestHeaders.Clear();
             if(addAuthorization)
@@ -175,7 +171,7 @@ Parameters:
 
 addAuthorization: {addAuthorization}");
             }
-            return await _httpClient.GetAsync(uri);
+            return await _httpClient.GetAsync(uri, cancellationToken);
         }
 
         /// <summary>
@@ -296,7 +292,7 @@ Generated query: {jobStatusUri.Query}");
         /// Gets temporary writable location
         /// </summary>
         /// <returns>temp writable cloud url</returns>
-        public async Task<HttpResponseMessage> GetAzureWriteUrl()
+        public async Task<HttpResponseMessage> GetAzureWriteUrlAsync(CancellationToken cancellationToken)
         {
             var requestUri = GetAosRequestUri(_settings.GetAzureWriteUrlActionPath);
 
@@ -312,7 +308,7 @@ Parameters:
 
 uniqueFileName: {uniqueFileName}");
             }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
+            var response = await PostStringRequestAsync(requestUri, parametersJson, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.GetAzureWriteUrl request failed.
@@ -330,8 +326,9 @@ Response message: {response.Content}");
         /// Checks execution status of a Job
         /// </summary>
         /// <param name="executionId">execution Id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Http response</returns>
-        public async Task<HttpResponseMessage> GetExecutionSummaryStatus(string executionId)
+        public async Task<HttpResponseMessage> GetExecutionSummaryStatusAsync(string executionId, CancellationToken cancellationToken)
         {
             var requestUri = GetAosRequestUri(_settings.GetExecutionSummaryStatusActionPath);
 
@@ -346,7 +343,7 @@ Parameters:
 
 executionId: {executionId}");
             }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
+            var response = await PostStringRequestAsync(requestUri, parametersJson, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.GetExecutionSummaryStatus request failed.
@@ -367,8 +364,9 @@ Response message: {response.Content}");
         /// Gets exported package Url location
         /// </summary>
         /// <param name="executionId">execution Id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Http response</returns>
-        public async Task<HttpResponseMessage> GetExportedPackageUrl(string executionId)
+        public async Task<HttpResponseMessage> GetExportedPackageUrlAsync(string executionId, CancellationToken cancellationToken)
         {
             var requestUri = GetAosRequestUri(_settings.GetExportedPackageUrlActionPath);
 
@@ -383,7 +381,7 @@ Parameters:
 
 executionId: {executionId}");
             }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
+            var response = await PostStringRequestAsync(requestUri, parametersJson, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.GetExportedPackageUrl request failed.
@@ -404,8 +402,9 @@ Response message: {response.Content}");
         /// Gets execution's summary page Url
         /// </summary>
         /// <param name="executionId">execution Id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Http response</returns>
-        public async Task<HttpResponseMessage> GetExecutionSummaryPageUrl(string executionId)
+        public async Task<HttpResponseMessage> GetExecutionSummaryPageUrlAsync(string executionId, CancellationToken cancellationToken)
         {
             var requestUri = GetAosRequestUri(_settings.GetExecutionSummaryPageUrlActionPath);
 
@@ -420,7 +419,7 @@ Parameters:
 
 executionId: {executionId}");
             }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
+            var response = await PostStringRequestAsync(requestUri, parametersJson, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.GetExecutionSummaryPageUrl request failed.
@@ -476,8 +475,9 @@ Response message: {response.Content}");
         /// <param name="execute">Flag whether to execute import</param>
         /// <param name="overwrite">Flag whether to overwrite data project</param>
         /// <param name="legalEntityId">Target legal entity</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
-        public async Task<HttpResponseMessage> ImportFromPackage(string packageUrl, string definitionGroupId, string executionId, bool execute, bool overwrite, string legalEntityId)
+        public async Task<HttpResponseMessage> ImportFromPackageAsync(string packageUrl, string definitionGroupId, string executionId, bool execute, bool overwrite, string legalEntityId, CancellationToken cancellationToken)
         {
             var requestUri = GetAosRequestUri(_settings.ImportFromPackageActionPath);
 
@@ -505,7 +505,7 @@ execute: {execute}
 overwrite: {overwrite}
 legalEntityId: {legalEntityId}");
             }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
+            var response = await PostStringRequestAsync(requestUri, parametersJson, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.ImportFromPackage request failed.
@@ -528,55 +528,18 @@ Response message: {response.Content}");
         }
 
         /// <summary>
-        /// Delete Execution History
-        /// </summary>
-        /// <param name="executionId">execution Id</param>
-        /// <returns></returns>
-        public async Task<HttpResponseMessage> DeleteExecutionHistoryJob(string executionId)
-        {
-            var requestUri = GetAosRequestUri(_settings.DeleteExecutionHistoryJobActionPath); 
-
-            var parameters = new { executionId };
-            string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.DeleteExecutionHistoryJob is being called.
-Uri: {requestUri}
-
-Parameters:
-
-executionId: {executionId}");
-            }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
-            if (!response.IsSuccessStatusCode)
-            {
-                Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.DeleteExecutionHistoryJob request failed.
-Uri: {requestUri}
-
-Parameters:
-
-executionId: {executionId}
-
-Response status code: {response.StatusCode}
-Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
-            }
-            return response;
-        }
-
-        /// <summary>
         /// Export a package that has been already uploaded to server
         /// </summary>
         /// <param name="definitionGroupId">data project name</param>
         /// <param name="packageName">package name </param>
         /// <param name="executionId">execution id to use for results</param>
         /// <param name="legalEntityId">the company to pull</param>
-        /// <param name="reExecute">reexecute flag</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>export package url</returns>
-        public async Task<HttpResponseMessage> ExportToPackage(string definitionGroupId, string packageName, string executionId, string legalEntityId, bool reExecute = false)
+        public async Task<HttpResponseMessage> ExportToPackageAsync(string definitionGroupId, string packageName, string executionId, string legalEntityId, CancellationToken cancellationToken)
         {            
             var requestUri = GetAosRequestUri(_settings.ExportToPackageActionPath);
-
+            var reExecute = false;
             var parameters = new
             {
                 definitionGroupId,
@@ -599,7 +562,7 @@ executionId: {executionId}
 reExecute: {reExecute}
 legalEntityId: {legalEntityId}");
             }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
+            var response = await PostStringRequestAsync(requestUri, parametersJson, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.ExportToPackage request failed.
@@ -619,111 +582,15 @@ Response message: {response.Content}");
             }
             return response;
         }
-
-        /// <summary>
-        /// Upload a package template and export data based on that template
-        /// </summary>
-        /// <param name="packageUrl">Location of uploaded package template</param>
-        /// <param name="definitionGroupId">Data project name</param>
-        /// <param name="executionId">Execution Id</param>
-        /// <param name="execute">Flag whether to execute export</param>
-        /// <param name="overwrite">Flag whether to overwrite data project</param>
-        /// <param name="legalEntityId">Source legal entity</param>
-        /// <returns>export package url</returns>
-        public async Task<HttpResponseMessage> ExportFromPackage(string packageUrl, string definitionGroupId, string executionId, bool execute, bool overwrite, string legalEntityId)
-        {
-            var requestUri = GetAosRequestUri(_settings.ExportFromPackageActionPath);
-
-            var parameters = new
-            {
-                packageUrl,
-                definitionGroupId,
-                executionId,
-                execute,
-                overwrite,
-                legalEntityId
-            };
-            string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.ExportFromPackage is being called.
-Uri: {requestUri}
-
-Parameters:
-
-packageUrl: {packageUrl}
-definitionGroupId: {definitionGroupId}
-executionId: {executionId}
-execute: {execute}
-overwrite: {overwrite}
-legalEntityId: {legalEntityId}");
-            }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
-            if (!response.IsSuccessStatusCode)
-            {
-                Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.ExportFromPackage request failed.
-Uri: {requestUri}
-
-Parameters:
-
-packageUrl: {packageUrl}
-definitionGroupId: {definitionGroupId}
-executionId: {executionId}
-execute: {execute}
-overwrite: {overwrite}
-legalEntityId: {legalEntityId}
-
-Response status code: {response.StatusCode}
-Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
-            }
-            return response;
-        }
-
-        /// <summary>
-        /// Get message status
-        /// </summary>
-        /// <param name="messageId">Message Id</param>
-        /// <returns></returns>
-        public async Task<HttpResponseMessage> GetMessageStatus(string messageId)
-        {
-            var requestUri = GetAosRequestUri(_settings.GetMessageStatusActionPath);
-            var parameters = new { messageId };
-            string parametersJson = JsonConvert.SerializeObject(parameters, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
-            if (_settings.LogVerbose || Log.IsDebugEnabled)
-            {
-                Log.Debug($@"Job: {_settings.JobKey}. HttpClientHelper.GetMessageStatus is being called.
-Uri: {requestUri}
-
-Parameters:
-
-messageId: {messageId}");
-            }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
-            if (!response.IsSuccessStatusCode)
-            {
-                Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.GetMessageStatus request failed.
-Uri: {requestUri}
-
-Parameters:
-
-messageId: {messageId}
-
-Response status code: {response.StatusCode}
-Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
-            }
-            return response;
-
-        }
-
+      
         /// <summary>
         /// Generate error keys file for data entity import
         /// </summary>
         /// <param name="executionId">Execution Id</param>
         /// <param name="entityName">Entity name</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
-        public async Task<HttpResponseMessage> GenerateImportTargetErrorKeysFile(string executionId, string entityName)
+        public async Task<HttpResponseMessage> GenerateImportTargetErrorKeysFileAsync(string executionId, string entityName, CancellationToken cancellationToken)
         {
             var requestUri = GetAosRequestUri(_settings.GenerateImportTargetErrorKeysFilePath);
 
@@ -743,7 +610,7 @@ Parameters:
 executionId: {executionId}
 entityName: {entityName}");
             }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
+            var response = await PostStringRequestAsync(requestUri, parametersJson, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.GenerateImportTargetErrorKeysFile request failed.
@@ -766,8 +633,9 @@ Response message: {response.Content}");
         /// </summary>
         /// <param name="executionId">Execution Id</param>
         /// <param name="entityName">Entity name</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
-        public async Task<HttpResponseMessage> GetImportTargetErrorKeysFileUrl(string executionId, string entityName)
+        public async Task<HttpResponseMessage> GetImportTargetErrorKeysFileUrlAsync(string executionId, string entityName, CancellationToken cancellationToken)
         {
             var requestUri = GetAosRequestUri(_settings.GetImportTargetErrorKeysFileUrlPath);
 
@@ -787,7 +655,7 @@ Parameters:
 executionId: {executionId}
 entityName: {entityName}");
             }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
+            var response = await PostStringRequestAsync(requestUri, parametersJson, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.GetImportTargetErrorKeysFileUrl request failed.
@@ -809,8 +677,9 @@ Response message: {response.Content}");
         /// Get execution errors
         /// </summary>
         /// <param name="executionId">Execution Id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
         /// <returns></returns>
-        public async Task<HttpResponseMessage> GetExecutionErrors(string executionId)
+        public async Task<HttpResponseMessage> GetExecutionErrors(string executionId, CancellationToken cancellationToken)
         {
             var requestUri = GetAosRequestUri(_settings.GetExecutionErrorsPath);
 
@@ -825,7 +694,7 @@ Parameters:
 
 executionId: {executionId}");
             }
-            var response = await PostStringRequestAsync(requestUri, parametersJson);
+            var response = await PostStringRequestAsync(requestUri, parametersJson, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 Log.Error($@"Job: {_settings.JobKey}. HttpClientHelper.GetExecutionErrors request failed.

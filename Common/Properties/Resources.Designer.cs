@@ -22,7 +22,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    public class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("RecurringIntegrationsScheduler.Common.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to AAD tenant id is missing in job configuration..
         /// </summary>
-        internal static string AAD_tenant_id_is_missing_in_job_configuration {
+        public static string AAD_tenant_id_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("AAD_tenant_id_is_missing_in_job_configuration", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Activity Id of recurring job is missing or is not a GUID in job configuration..
         /// </summary>
-        internal static string Activity_Id_of_recurring_job_is_missing_or_is_not_a_GUID_in_job_configuration {
+        public static string Activity_Id_of_recurring_job_is_missing_or_is_not_a_GUID_in_job_configuration {
             get {
                 return ResourceManager.GetString("Activity_Id_of_recurring_job_is_missing_or_is_not_a_GUID_in_job_configuration", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to AOS URL is missing in job configuration..
         /// </summary>
-        internal static string AOS_URL_is_missing_in_job_configuration {
+        public static string AOS_URL_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("AOS_URL_is_missing_in_job_configuration", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Azure application client id is missing or is not a GUID in job configuration..
         /// </summary>
-        internal static string Azure_application_client_id_is_missing_or_is_not_a_GUID_in_job_configuration {
+        public static string Azure_application_client_id_is_missing_or_is_not_a_GUID_in_job_configuration {
             get {
                 return ResourceManager.GetString("Azure_application_client_id_is_missing_or_is_not_a_GUID_in_job_configuration", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Azure authentication endpoint URL is missing in job configuration..
         /// </summary>
-        internal static string Azure_authentication_endpoint_URL_is_missing_in_job_configuration {
+        public static string Azure_authentication_endpoint_URL_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Azure_authentication_endpoint_URL_is_missing_in_job_configuration", resourceCulture);
             }
@@ -108,7 +108,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Azure web application secret is missing in job configuration..
         /// </summary>
-        internal static string Azure_web_application_secret_is_missing_in_job_configuration {
+        public static string Azure_web_application_secret_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Azure_web_application_secret_is_missing_in_job_configuration", resourceCulture);
             }
@@ -117,7 +117,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot parse SortBy value in job configuration.
         /// </summary>
-        internal static string Cannot_parse_SortBy_value_in_job_configuration {
+        public static string Cannot_parse_SortBy_value_in_job_configuration {
             get {
                 return ResourceManager.GetString("Cannot_parse_SortBy_value_in_job_configuration", resourceCulture);
             }
@@ -126,7 +126,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Cannot read a file {0}.
         /// </summary>
-        internal static string Cannot_read_a_file_0 {
+        public static string Cannot_read_a_file_0 {
             get {
                 return ResourceManager.GetString("Cannot_read_a_file_0", resourceCulture);
             }
@@ -135,7 +135,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Company is missing in job configuration..
         /// </summary>
-        internal static string Company_is_missing_in_job_configuration {
+        public static string Company_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Company_is_missing_in_job_configuration", resourceCulture);
             }
@@ -144,7 +144,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Data project is missing in job configuration..
         /// </summary>
-        internal static string Data_project_is_missing_in_job_configuration {
+        public static string Data_project_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Data_project_is_missing_in_job_configuration", resourceCulture);
             }
@@ -153,7 +153,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Download errors directory does not exist or cannot be accessed..
         /// </summary>
-        internal static string Download_errors_directory_does_not_exist_or_cannot_be_accessed {
+        public static string Download_errors_directory_does_not_exist_or_cannot_be_accessed {
             get {
                 return ResourceManager.GetString("Download_errors_directory_does_not_exist_or_cannot_be_accessed", resourceCulture);
             }
@@ -162,7 +162,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Download errors directory is missing in job configuration..
         /// </summary>
-        internal static string Download_errors_directory_is_missing_in_job_configuration {
+        public static string Download_errors_directory_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Download_errors_directory_is_missing_in_job_configuration", resourceCulture);
             }
@@ -171,7 +171,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Download success directory does not exist or cannot be accessed..
         /// </summary>
-        internal static string Download_success_directory_does_not_exist_or_cannot_be_accessed {
+        public static string Download_success_directory_does_not_exist_or_cannot_be_accessed {
             get {
                 return ResourceManager.GetString("Download_success_directory_does_not_exist_or_cannot_be_accessed", resourceCulture);
             }
@@ -180,7 +180,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Download success directory is missing in job configuration..
         /// </summary>
-        internal static string Download_success_directory_is_missing_in_job_configuration {
+        public static string Download_success_directory_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Download_success_directory_is_missing_in_job_configuration", resourceCulture);
             }
@@ -189,7 +189,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Entity name is missing in job configuration..
         /// </summary>
-        internal static string Entity_name_is_missing_in_job_configuration {
+        public static string Entity_name_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Entity_name_is_missing_in_job_configuration", resourceCulture);
             }
@@ -198,7 +198,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Error moving file: {0}. Error: {1}.
         /// </summary>
-        internal static string Error_moving_file_0 {
+        public static string Error_moving_file_0 {
             get {
                 return ResourceManager.GetString("Error_moving_file_0", resourceCulture);
             }
@@ -207,7 +207,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Error saving file: {0}. Error: {1}.
         /// </summary>
-        internal static string Error_saving_file_0 {
+        public static string Error_saving_file_0 {
             get {
                 return ResourceManager.GetString("Error_saving_file_0", resourceCulture);
             }
@@ -216,7 +216,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Extension of status files is missing in job configuration..
         /// </summary>
-        internal static string Extension_of_status_files_is_missing_in_job_configuration {
+        public static string Extension_of_status_files_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Extension_of_status_files_is_missing_in_job_configuration", resourceCulture);
             }
@@ -225,7 +225,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to File {0} deleted successfully..
         /// </summary>
-        internal static string File_0_deleted_successfully {
+        public static string File_0_deleted_successfully {
             get {
                 return ResourceManager.GetString("File_0_deleted_successfully", resourceCulture);
             }
@@ -234,7 +234,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to File {0} saved successfully..
         /// </summary>
-        internal static string File_0_saved_successfully {
+        public static string File_0_saved_successfully {
             get {
                 return ResourceManager.GetString("File_0_saved_successfully", resourceCulture);
             }
@@ -243,7 +243,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Method GetAzureWriteUrl returned empty string. Check previous errors..
         /// </summary>
-        internal static string GetAzureWriteUrl_returned_empty_string_Check_previous_errors {
+        public static string GetAzureWriteUrl_returned_empty_string_Check_previous_errors {
             get {
                 return ResourceManager.GetString("GetAzureWriteUrl_returned_empty_string_Check_previous_errors", resourceCulture);
             }
@@ -252,7 +252,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Input directory does not exist or cannot be accessed..
         /// </summary>
-        internal static string Input_directory_does_not_exist_or_cannot_be_accessed {
+        public static string Input_directory_does_not_exist_or_cannot_be_accessed {
             get {
                 return ResourceManager.GetString("Input_directory_does_not_exist_or_cannot_be_accessed", resourceCulture);
             }
@@ -261,16 +261,25 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Input directory is missing in job configuration..
         /// </summary>
-        internal static string Input_directory_is_missing_in_job_configuration {
+        public static string Input_directory_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Input_directory_is_missing_in_job_configuration", resourceCulture);
             }
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Job: {0} was cancelled..
+        /// </summary>
+        public static string Job_0_cancelled {
+            get {
+                return ResourceManager.GetString("Job_0_cancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Missing scheduler.
         /// </summary>
-        internal static string Missing_scheduler {
+        public static string Missing_scheduler {
             get {
                 return ResourceManager.GetString("Missing_scheduler", resourceCulture);
             }
@@ -279,7 +288,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to No active scheduler.
         /// </summary>
-        internal static string No_active_scheduler {
+        public static string No_active_scheduler {
             get {
                 return ResourceManager.GetString("No_active_scheduler", resourceCulture);
             }
@@ -288,7 +297,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Job is configured to get target legal entity from file name, but no separator was configured..
         /// </summary>
-        internal static string no_separator {
+        public static string no_separator {
             get {
                 return ResourceManager.GetString("no_separator", resourceCulture);
             }
@@ -297,7 +306,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Package template: {0} was not found!.
         /// </summary>
-        internal static string Package_template_0_not_found {
+        public static string Package_template_0_not_found {
             get {
                 return ResourceManager.GetString("Package_template_0_not_found", resourceCulture);
             }
@@ -306,7 +315,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Processing errors directory does not exist or cannot be accessed..
         /// </summary>
-        internal static string Processing_errors_directory_does_not_exist_or_cannot_be_accessed {
+        public static string Processing_errors_directory_does_not_exist_or_cannot_be_accessed {
             get {
                 return ResourceManager.GetString("Processing_errors_directory_does_not_exist_or_cannot_be_accessed", resourceCulture);
             }
@@ -315,7 +324,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Processing errors directory is missing in job configuration..
         /// </summary>
-        internal static string Processing_errors_directory_is_missing_in_job_configuration {
+        public static string Processing_errors_directory_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Processing_errors_directory_is_missing_in_job_configuration", resourceCulture);
             }
@@ -324,7 +333,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Processing success directory does not exist or cannot be accessed..
         /// </summary>
-        internal static string Processing_success_directory_does_not_exist_or_cannot_be_accessed {
+        public static string Processing_success_directory_does_not_exist_or_cannot_be_accessed {
             get {
                 return ResourceManager.GetString("Processing_success_directory_does_not_exist_or_cannot_be_accessed", resourceCulture);
             }
@@ -333,7 +342,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Processing success directory is missing in job configuration..
         /// </summary>
-        internal static string Processing_success_directory_is_missing_in_job_configuration {
+        public static string Processing_success_directory_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Processing_success_directory_is_missing_in_job_configuration", resourceCulture);
             }
@@ -342,7 +351,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Request failed at client..
         /// </summary>
-        internal static string Request_failed_at_client {
+        public static string Request_failed_at_client {
             get {
                 return ResourceManager.GetString("Request_failed_at_client", resourceCulture);
             }
@@ -351,7 +360,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Unknown error.
         /// </summary>
-        internal static string Unknown_error {
+        public static string Unknown_error {
             get {
                 return ResourceManager.GetString("Unknown_error", resourceCulture);
             }
@@ -360,7 +369,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Upload errors directory does not exist or cannot be accessed..
         /// </summary>
-        internal static string Upload_errors_directory_does_not_exist_or_cannot_be_accessed {
+        public static string Upload_errors_directory_does_not_exist_or_cannot_be_accessed {
             get {
                 return ResourceManager.GetString("Upload_errors_directory_does_not_exist_or_cannot_be_accessed", resourceCulture);
             }
@@ -369,7 +378,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Upload errors directory is missing in job configuration..
         /// </summary>
-        internal static string Upload_errors_directory_is_missing_in_job_configuration {
+        public static string Upload_errors_directory_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Upload_errors_directory_is_missing_in_job_configuration", resourceCulture);
             }
@@ -378,7 +387,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Upload success directory does not exist or cannot be accessed..
         /// </summary>
-        internal static string Upload_success_directory_does_not_exist_or_cannot_be_accessed {
+        public static string Upload_success_directory_does_not_exist_or_cannot_be_accessed {
             get {
                 return ResourceManager.GetString("Upload_success_directory_does_not_exist_or_cannot_be_accessed", resourceCulture);
             }
@@ -387,7 +396,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Upload success directory is missing in job configuration..
         /// </summary>
-        internal static string Upload_success_directory_is_missing_in_job_configuration {
+        public static string Upload_success_directory_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("Upload_success_directory_is_missing_in_job_configuration", resourceCulture);
             }
@@ -396,7 +405,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to User password is missing in job configuration..
         /// </summary>
-        internal static string User_password_is_missing_in_job_configuration {
+        public static string User_password_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("User_password_is_missing_in_job_configuration", resourceCulture);
             }
@@ -405,7 +414,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to User principal name is missing in job configuration..
         /// </summary>
-        internal static string User_principal_name_is_missing_in_job_configuration {
+        public static string User_principal_name_is_missing_in_job_configuration {
             get {
                 return ResourceManager.GetString("User_principal_name_is_missing_in_job_configuration", resourceCulture);
             }
@@ -414,7 +423,7 @@ namespace RecurringIntegrationsScheduler.Common.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Verification of package template file location failed! {0}.
         /// </summary>
-        internal static string Verification_of_package_template_location_failed_0 {
+        public static string Verification_of_package_template_location_failed_0 {
             get {
                 return ResourceManager.GetString("Verification_of_package_template_location_failed_0", resourceCulture);
             }
