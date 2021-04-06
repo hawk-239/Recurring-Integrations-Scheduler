@@ -316,7 +316,7 @@ Uri: {requestUri}
 
 Response status code: {response.StatusCode}
 Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
+Response message: {await response.Content.ReadAsStringAsync()}");
                 return null;
             }
             return response;
@@ -355,7 +355,7 @@ executionId: {executionId}
 
 Response status code: {response.StatusCode}
 Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
+Response message: {await response.Content.ReadAsStringAsync()}");
             }
             return response;
         }
@@ -393,7 +393,7 @@ executionId: {executionId}
 
 Response status code: {response.StatusCode}
 Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
+Response message: {await response.Content.ReadAsStringAsync()}");
             }
             return response;
         }
@@ -431,7 +431,7 @@ executionId: {executionId}
 
 Response status code: {response.StatusCode}
 Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
+Response message: {await response.Content.ReadAsStringAsync()}");
             }
             return response;
         }
@@ -461,7 +461,7 @@ Uri: {blobUrl.AbsoluteUri}
 
 Response status code: {response.StatusCode}
 Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
+Response message: {await response.Content.ReadAsStringAsync()}");
             }
             return response;
         }
@@ -522,7 +522,7 @@ legalEntityId: {legalEntityId}
 
 Response status code: {response.StatusCode}
 Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
+Response message: {await response.Content.ReadAsStringAsync()}");
             }
             return response;
         }
@@ -578,7 +578,7 @@ legalEntityId: {legalEntityId}
 
 Response status code: {response.StatusCode}
 Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
+Response message: {await response.Content.ReadAsStringAsync()}");
             }
             return response;
         }
@@ -623,7 +623,7 @@ entityName: {entityName}
 
 Response status code: {response.StatusCode}
 Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
+Response message: {await response.Content.ReadAsStringAsync()}");
             }
             return response;
         }
@@ -668,7 +668,7 @@ entityName: {entityName}
 
 Response status code: {response.StatusCode}
 Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
+Response message: {await response.Content.ReadAsStringAsync()}");
             }
             return response;
         }
@@ -706,7 +706,7 @@ executionId: {executionId}
 
 Response status code: {response.StatusCode}
 Response reason: {response.ReasonPhrase}
-Response message: {response.Content}");
+Response message: {await response.Content.ReadAsStringAsync()}");
             }
             return response;
         }
