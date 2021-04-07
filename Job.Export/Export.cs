@@ -9,6 +9,7 @@ using RecurringIntegrationsScheduler.Common.Helpers;
 using RecurringIntegrationsScheduler.Common.JobSettings;
 using RecurringIntegrationsScheduler.Job.Properties;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net.Http;
@@ -128,6 +129,10 @@ namespace RecurringIntegrationsScheduler.Job
                 }
                 Log.Error(string.Format(Resources.Job_0_thrown_an_error_1, _context.JobDetail.Key, ex.Message));
             }
+            finally
+            {
+                PowerShellHelper.ExecutePowerShellScript(_settings.PostTaskScript, new Dictionary<string, string> { ["taskFolderName"] = _settings.DownloadSuccessDir });
+            }
         }
 
         /// <summary>
@@ -244,9 +249,19 @@ namespace RecurringIntegrationsScheduler.Job
 
                     if (_settings.UnzipPackage)
                     {
-                        await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.UnzipPackageAsync(dataMessage.FullPath, _settings.DeletePackage, _settings.AddTimestamp, ct), cancellationToken);
+                        var unzippedFiles = await _retryPolicyForAsyncIo.ExecuteAsync(ct => FileOperationsHelper.UnzipPackageAsync(dataMessage.FullPath, _settings.DeletePackage, _settings.AddTimestamp, ct), cancellationToken);
                         cancellationToken.ThrowIfCancellationRequested();
+
+                        foreach (var unzippedFileName in unzippedFiles)
+                        {
+                            PowerShellHelper.ExecutePowerShellScript(_settings.PostDownloadScript, new Dictionary<string, string> { ["downloadedFileName"] = unzippedFileName });
+                        }
                     }
+                    else
+                    {
+                        PowerShellHelper.ExecutePowerShellScript(_settings.PostDownloadScript, new Dictionary<string, string> { ["downloadedFileName"] = dataMessage.FullPath});
+                    }
+
                 }
                 else if (executionStatus == "Unknown" || executionStatus == "Failed" || executionStatus == "Canceled")
                 {

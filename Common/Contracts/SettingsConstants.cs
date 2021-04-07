@@ -347,5 +347,15 @@ namespace RecurringIntegrationsScheduler.Common.Contracts
         /// Job key
         /// </summary>
         public const string JobKey = "JobKey";
+
+        /// <summary>
+        /// Path + file name of PS1 script that should be executed after each file download
+        /// </summary>
+        public const string PostDownloadScript = "PostDownloadScript";
+
+        /// <summary>
+        /// Path + file name of the PS1 script that should be executed after task is completed
+        /// </summary>
+        public const string PostTaskScript = "PostTaskScript";
     }
 }

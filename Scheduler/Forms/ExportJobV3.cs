@@ -194,6 +194,9 @@ namespace RecurringIntegrationsScheduler.Forms
 
                 verboseLoggingCheckBox.Checked = JobDetail.JobDataMap.GetBooleanValue(SettingsConstants.LogVerbose);
 
+                postDownloadScript.Text = JobDetail.JobDataMap.GetString(SettingsConstants.PostDownloadScript);
+                postTaskScript.Text = JobDetail.JobDataMap.GetString(SettingsConstants.PostTaskScript);
+
                 Properties.Settings.Default.Save();
             }
             FormsHelper.SetDropDownsWidth(this);
@@ -242,7 +245,9 @@ namespace RecurringIntegrationsScheduler.Forms
                 {SettingsConstants.GetExecutionSummaryStatusActionPath, getExecutionSummaryStatusTextBox.Text},
                 {SettingsConstants.GetExportedPackageUrlActionPath, getExportedPackageUrlTextBox.Text},
                 {SettingsConstants.IndefinitePause, pauseIndefinitelyCheckBox.Checked},
-                {SettingsConstants.LogVerbose, verboseLoggingCheckBox.Checked}
+                {SettingsConstants.LogVerbose, verboseLoggingCheckBox.Checked},
+                {SettingsConstants.PostDownloadScript, postDownloadScript.Text},
+                {SettingsConstants.PostTaskScript, postTaskScript.Text},
             };
             if (serviceAuthRadioButton.Checked)
             {
@@ -476,6 +481,18 @@ namespace RecurringIntegrationsScheduler.Forms
                 errorsFolder.Enabled = true;
                 errorsFolderBrowserButton.Enabled = true;
             }
+        }
+
+        private void PostDownloadScriptBrowserButton_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+                postDownloadScript.Text = openFileDialog.FileName;
+        }
+
+        private void PostTaskScriptBrowserButton_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+                postTaskScript.Text = openFileDialog.FileName;
         }
 
         #endregion

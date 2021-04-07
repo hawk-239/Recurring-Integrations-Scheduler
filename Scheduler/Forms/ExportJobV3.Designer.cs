@@ -45,6 +45,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.jobName = new System.Windows.Forms.TextBox();
             this.jobNameLabel = new System.Windows.Forms.Label();
             this.folderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.retryPolicyGroupBox = new System.Windows.Forms.GroupBox();
             this.retriesLabel = new System.Windows.Forms.Label();
             this.retriesCountUpDown = new System.Windows.Forms.NumericUpDown();
@@ -119,12 +120,20 @@ namespace RecurringIntegrationsScheduler.Forms
             this.mainToolStrip = new System.Windows.Forms.ToolStrip();
             this.cancelToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.addToolStripButton = new System.Windows.Forms.ToolStripButton();
+            this.scriptsGroupBox = new System.Windows.Forms.GroupBox();
+            this.postDownloadScriptLabel = new System.Windows.Forms.Label();
+            this.postDownloadScript = new System.Windows.Forms.TextBox();
+            this.postDownloadScriptBrowserButton = new System.Windows.Forms.Button();
+            this.postTaskScriptLabel = new System.Windows.Forms.Label();
+            this.postTaskScript = new System.Windows.Forms.TextBox();
+            this.postTaskScriptBrowserButton = new System.Windows.Forms.Button();
             this.retryPolicyGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.retriesCountUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.retriesDelayUpDown)).BeginInit();
             this.groupBoxExceptions.SuspendLayout();
             this.jobTabControl.SuspendLayout();
             this.exportJobOverviewTabPage.SuspendLayout();
+            this.scriptsGroupBox.SuspendLayout();
             this.jobIdentificationGroupBox.SuspendLayout();
             this.jobControlGroupBox.SuspendLayout();
             this.groupBoxLogging.SuspendLayout();
@@ -400,6 +409,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.exportJobOverviewTabPage.Controls.Add(this.jobIdentificationGroupBox);
             this.exportJobOverviewTabPage.Controls.Add(this.jobControlGroupBox);
             this.exportJobOverviewTabPage.Controls.Add(this.foldersGroupBox);
+            this.exportJobOverviewTabPage.Controls.Add(this.scriptsGroupBox);
             this.exportJobOverviewTabPage.Location = new System.Drawing.Point(4, 33);
             this.exportJobOverviewTabPage.Margin = new System.Windows.Forms.Padding(6);
             this.exportJobOverviewTabPage.Name = "exportJobOverviewTabPage";
@@ -407,6 +417,85 @@ namespace RecurringIntegrationsScheduler.Forms
             this.exportJobOverviewTabPage.Size = new System.Drawing.Size(1286, 839);
             this.exportJobOverviewTabPage.TabIndex = 0;
             this.exportJobOverviewTabPage.Text = "Export job overview";
+            // 
+            // scriptsGroupBox
+            // 
+            this.scriptsGroupBox.Controls.Add(this.postDownloadScriptLabel);
+            this.scriptsGroupBox.Controls.Add(this.postDownloadScript);
+            this.scriptsGroupBox.Controls.Add(this.postDownloadScriptBrowserButton);
+            this.scriptsGroupBox.Controls.Add(this.postTaskScriptLabel);
+            this.scriptsGroupBox.Controls.Add(this.postTaskScript);
+            this.scriptsGroupBox.Controls.Add(this.postTaskScriptBrowserButton);
+            this.scriptsGroupBox.Location = new System.Drawing.Point(409, 280);
+            this.scriptsGroupBox.Margin = new System.Windows.Forms.Padding(6);
+            this.scriptsGroupBox.Name = "scriptsGroupBox";
+            this.scriptsGroupBox.Padding = new System.Windows.Forms.Padding(6);
+            this.scriptsGroupBox.Size = new System.Drawing.Size(409, 266);
+            this.scriptsGroupBox.TabIndex = 14;
+            this.scriptsGroupBox.TabStop = false;
+            this.scriptsGroupBox.Text = "PowerShell scripts";
+            // 
+            // postDownloadScriptLabel
+            // 
+            this.postDownloadScriptLabel.AutoSize = true;
+            this.postDownloadScriptLabel.Location = new System.Drawing.Point(6, 63);
+            this.postDownloadScriptLabel.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.postDownloadScriptLabel.Name = "postDownloadScriptLabel";
+            this.postDownloadScriptLabel.Size = new System.Drawing.Size(125, 13);
+            this.postDownloadScriptLabel.TabIndex = 8;
+            this.postDownloadScriptLabel.Text = "Post-download script";
+            // 
+            // postDownloadScript
+            // 
+            this.postDownloadScript.Location = new System.Drawing.Point(9, 96);
+            this.postDownloadScript.Margin = new System.Windows.Forms.Padding(6);
+            this.postDownloadScript.Name = "postDownloadScript";
+            this.postDownloadScript.Size = new System.Drawing.Size(340, 29);
+            this.postDownloadScript.TabIndex = 4;
+            // 
+            // postDownloadScriptBrowserButton
+            // 
+            this.postDownloadScriptBrowserButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.postDownloadScriptBrowserButton.Image = global::RecurringIntegrationsScheduler.Properties.Resources.Folder_open_32xMD_exp;
+            this.postDownloadScriptBrowserButton.Location = new System.Drawing.Point(358, 90);
+            this.postDownloadScriptBrowserButton.Margin = new System.Windows.Forms.Padding(0);
+            this.postDownloadScriptBrowserButton.Name = "postDownloadScriptBrowserButton";
+            this.postDownloadScriptBrowserButton.Size = new System.Drawing.Size(44, 48);
+            this.postDownloadScriptBrowserButton.TabIndex = 5;
+            this.postDownloadScriptBrowserButton.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+            this.postDownloadScriptBrowserButton.UseVisualStyleBackColor = true;
+            this.postDownloadScriptBrowserButton.Click += new System.EventHandler(this.PostDownloadScriptBrowserButton_Click);
+            // 
+            // postTaskScriptLabel
+            // 
+            this.postTaskScriptLabel.AutoSize = true;
+            this.postTaskScriptLabel.Location = new System.Drawing.Point(6, 175);
+            this.postTaskScriptLabel.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.postTaskScriptLabel.Name = "postTaskScriptLabel";
+            this.postTaskScriptLabel.Size = new System.Drawing.Size(117, 25);
+            this.postTaskScriptLabel.TabIndex = 11;
+            this.postTaskScriptLabel.Text = "Post-task script";
+            // 
+            // postTaskScript
+            // 
+            this.postTaskScript.Location = new System.Drawing.Point(9, 209);
+            this.postTaskScript.Margin = new System.Windows.Forms.Padding(6);
+            this.postTaskScript.Name = "postTaskScript";
+            this.postTaskScript.Size = new System.Drawing.Size(340, 29);
+            this.postTaskScript.TabIndex = 7;
+            // 
+            // postTaskScriptBrowserButton
+            // 
+            this.postTaskScriptBrowserButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.postTaskScriptBrowserButton.Image = global::RecurringIntegrationsScheduler.Properties.Resources.Folder_open_32xMD_exp;
+            this.postTaskScriptBrowserButton.Location = new System.Drawing.Point(358, 201);
+            this.postTaskScriptBrowserButton.Margin = new System.Windows.Forms.Padding(0);
+            this.postTaskScriptBrowserButton.Name = "postTaskScriptBrowserButton";
+            this.postTaskScriptBrowserButton.Size = new System.Drawing.Size(44, 48);
+            this.postTaskScriptBrowserButton.TabIndex = 8;
+            this.postTaskScriptBrowserButton.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+            this.postTaskScriptBrowserButton.UseVisualStyleBackColor = true;
+            this.postTaskScriptBrowserButton.Click += new System.EventHandler(this.PostTaskScriptBrowserButton_Click);
             // 
             // jobIdentificationGroupBox
             // 
@@ -1195,6 +1284,11 @@ namespace RecurringIntegrationsScheduler.Forms
             this.addToolStripButton.Text = "Add job";
             this.addToolStripButton.Click += new System.EventHandler(this.AddToolStripButton_Click);
             // 
+            // openFileDialog
+            // 
+            this.openFileDialog.DefaultExt = "ps1";
+            this.openFileDialog.Filter = "PowerShell script files (*.ps1)|*.ps1|All files (*.*)|*.*";
+            // 
             // ExportJobV3
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
@@ -1223,6 +1317,8 @@ namespace RecurringIntegrationsScheduler.Forms
             this.groupBoxExceptions.PerformLayout();
             this.jobTabControl.ResumeLayout(false);
             this.exportJobOverviewTabPage.ResumeLayout(false);
+            this.scriptsGroupBox.ResumeLayout(false);
+            this.scriptsGroupBox.PerformLayout();
             this.jobIdentificationGroupBox.ResumeLayout(false);
             this.jobIdentificationGroupBox.PerformLayout();
             this.jobControlGroupBox.ResumeLayout(false);
@@ -1271,6 +1367,7 @@ namespace RecurringIntegrationsScheduler.Forms
         private System.Windows.Forms.TextBox jobName;
         private System.Windows.Forms.Label jobNameLabel;
         private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog;
+        private System.Windows.Forms.OpenFileDialog openFileDialog;
         private System.Windows.Forms.Button errorsFolderBrowserButton;
         private System.Windows.Forms.TextBox errorsFolder;
         private System.Windows.Forms.Label errorsFolderLabel;
@@ -1349,5 +1446,12 @@ namespace RecurringIntegrationsScheduler.Forms
         private System.Windows.Forms.Label andOrLabel;
         private System.Windows.Forms.GroupBox groupBoxLogging;
         private System.Windows.Forms.CheckBox verboseLoggingCheckBox;
+        private System.Windows.Forms.GroupBox scriptsGroupBox;
+        private System.Windows.Forms.Label postDownloadScriptLabel;
+        private System.Windows.Forms.TextBox postDownloadScript;
+        private System.Windows.Forms.Button postDownloadScriptBrowserButton;
+        private System.Windows.Forms.Label postTaskScriptLabel;
+        private System.Windows.Forms.TextBox postTaskScript;
+        private System.Windows.Forms.Button postTaskScriptBrowserButton;
     }
 }

@@ -83,6 +83,10 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
             }
 
             DelayBetweenStatusCheck = dataMap.GetInt(SettingsConstants.DelayBetweenStatusCheck);
+
+            PostDownloadScript = dataMap.GetString(SettingsConstants.PostDownloadScript);
+
+            PostTaskScript = dataMap.GetString(SettingsConstants.PostTaskScript);
         }
 
         #region Members
@@ -150,6 +154,22 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
         /// Delay between status checks.
         /// </value>
         public int DelayBetweenStatusCheck { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a path + file name of PS1 script that should be executed after each file download.
+        /// </summary>
+        /// <value>
+        /// Delay between status checks.
+        /// </value>
+        public string PostDownloadScript { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a path + file name of the PS1 script that should be executed after export task is completed.
+        /// </summary>
+        /// <value>
+        /// Delay between status checks.
+        /// </value>
+        public string PostTaskScript { get; private set; }
 
         #endregion
     }

@@ -56,6 +56,7 @@
     <Compile Include="Helpers\AuthenticationHelper.cs" />
     <Compile Include="Helpers\FileOperationsHelper.cs" />
     <Compile Include="Helpers\HttpRetryHandler.cs" />
+    <Compile Include="Helpers\PowerShellHelper.cs" />
     <Compile Include="JobSettings\ExportJobSettings.cs" />
     <Compile Include="JobSettings\ImportJobSettings.cs" />
     <Compile Include="JobSettings\ExecutionJobSettings.cs" />

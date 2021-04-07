@@ -195,9 +195,11 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
         /// <param name="deletePackage">Flag whether to delete zip file</param>
         /// <param name="addTimestamp">Flag whether to add timestamp to extracted file name</param>
         /// <param name="cancellationToken">Cancellation token</param>
-        /// <returns>Boolean with operation result</returns>
-        public static async Task UnzipPackageAsync(string filePath, bool deletePackage, bool addTimestamp, CancellationToken cancellationToken)
+        /// <returns>List of unzipped file names</returns>
+        public static async Task<List<string>> UnzipPackageAsync(string filePath, bool deletePackage, bool addTimestamp, CancellationToken cancellationToken)
         {
+            var unzippedFiles = new List<string>();
+
             if (File.Exists(filePath))
             {
                 using (var zip = ZipFile.OpenRead(filePath))
@@ -225,12 +227,14 @@ namespace RecurringIntegrationsScheduler.Common.Helpers
                         using var zipStream = entry.Open();
                         using var fileStream = new FileStream(fileName, FileMode.Create);
                         await zipStream.CopyToAsync(fileStream, 81920, cancellationToken);
-
+                        unzippedFiles.Add(fileName);
                     }
                 }
                 if (deletePackage)
                     File.Delete(filePath);
             }
+
+            return unzippedFiles;
         }
 
         /// <summary>
