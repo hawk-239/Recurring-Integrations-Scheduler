@@ -141,6 +141,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.delayBetweenFilesLabel = new System.Windows.Forms.Label();
             this.delayBetweenFilesNumericUpDown = new System.Windows.Forms.NumericUpDown();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.openScriptFileDialog = new System.Windows.Forms.OpenFileDialog();
             this.retryPolicyGroupBox = new System.Windows.Forms.GroupBox();
             this.retriesLabel = new System.Windows.Forms.Label();
             this.retriesCountUpDown = new System.Windows.Forms.NumericUpDown();
@@ -197,6 +198,16 @@ namespace RecurringIntegrationsScheduler.Forms
             this.cancelToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.addToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.mainToolStrip = new System.Windows.Forms.ToolStrip();
+            this.scriptsGroupBox = new System.Windows.Forms.GroupBox();
+            this.preTaskScriptLabel = new System.Windows.Forms.Label();
+            this.preTaskScript = new System.Windows.Forms.TextBox();
+            this.preTaskScriptBrowserButton = new System.Windows.Forms.Button();
+            this.preUploadScriptLabel = new System.Windows.Forms.Label();
+            this.preUploadScript = new System.Windows.Forms.TextBox();
+            this.preUploadScriptBrowserButton = new System.Windows.Forms.Button();
+            this.postTaskScriptLabel = new System.Windows.Forms.Label();
+            this.postTaskScript = new System.Windows.Forms.TextBox();
+            this.postTaskScriptBrowserButton = new System.Windows.Forms.Button();
             this.foldersGroupBox.SuspendLayout();
             this.axDetailsGroupBox.SuspendLayout();
             this.authMethodPanel.SuspendLayout();
@@ -216,6 +227,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.groupBoxExceptions.SuspendLayout();
             this.jobTabControl.SuspendLayout();
             this.importJobOverviewTabPage.SuspendLayout();
+            this.scriptsGroupBox.SuspendLayout();
             this.jobIdentificationGroupBox.SuspendLayout();
             this.jobControlGroupBox.SuspendLayout();
             this.groupBoxLogging.SuspendLayout();
@@ -1498,6 +1510,11 @@ namespace RecurringIntegrationsScheduler.Forms
             // 
             this.openFileDialog.Filter = "Package files|*.zip";
             // 
+            // openScriptFileDialog
+            // 
+            this.openScriptFileDialog.DefaultExt = "ps1";
+            this.openScriptFileDialog.Filter = "PowerShell script files (*.ps1)|*.ps1|All files (*.*)|*.*";
+            // 
             // retryPolicyGroupBox
             // 
             this.retryPolicyGroupBox.Controls.Add(this.retriesLabel);
@@ -1621,6 +1638,7 @@ namespace RecurringIntegrationsScheduler.Forms
             this.importJobOverviewTabPage.Controls.Add(this.jobIdentificationGroupBox);
             this.importJobOverviewTabPage.Controls.Add(this.jobControlGroupBox);
             this.importJobOverviewTabPage.Controls.Add(this.foldersGroupBox);
+            this.importJobOverviewTabPage.Controls.Add(this.scriptsGroupBox);
             this.importJobOverviewTabPage.Location = new System.Drawing.Point(4, 33);
             this.importJobOverviewTabPage.Margin = new System.Windows.Forms.Padding(4);
             this.importJobOverviewTabPage.Name = "importJobOverviewTabPage";
@@ -1628,6 +1646,119 @@ namespace RecurringIntegrationsScheduler.Forms
             this.importJobOverviewTabPage.Size = new System.Drawing.Size(1286, 903);
             this.importJobOverviewTabPage.TabIndex = 0;
             this.importJobOverviewTabPage.Text = "Import job overview";
+            // 
+            // scriptsGroupBox
+            // 
+            this.scriptsGroupBox.Controls.Add(this.preTaskScriptLabel);
+            this.scriptsGroupBox.Controls.Add(this.preTaskScript);
+            this.scriptsGroupBox.Controls.Add(this.preTaskScriptBrowserButton);
+            this.scriptsGroupBox.Controls.Add(this.preUploadScriptLabel);
+            this.scriptsGroupBox.Controls.Add(this.preUploadScript);
+            this.scriptsGroupBox.Controls.Add(this.preUploadScriptBrowserButton);
+            this.scriptsGroupBox.Controls.Add(this.postTaskScriptLabel);
+            this.scriptsGroupBox.Controls.Add(this.postTaskScript);
+            this.scriptsGroupBox.Controls.Add(this.postTaskScriptBrowserButton);
+            this.scriptsGroupBox.Location = new System.Drawing.Point(409, 576);
+            this.scriptsGroupBox.Margin = new System.Windows.Forms.Padding(6);
+            this.scriptsGroupBox.Name = "scriptsGroupBox";
+            this.scriptsGroupBox.Padding = new System.Windows.Forms.Padding(6);
+            this.scriptsGroupBox.Size = new System.Drawing.Size(409, 308);
+            this.scriptsGroupBox.TabIndex = 14;
+            this.scriptsGroupBox.TabStop = false;
+            this.scriptsGroupBox.Text = "PowerShell scripts";
+            // 
+            // preTaskScriptLabel
+            // 
+            this.preTaskScriptLabel.AutoSize = true;
+            this.preTaskScriptLabel.Location = new System.Drawing.Point(6, 63);
+            this.preTaskScriptLabel.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.preTaskScriptLabel.Name = "preTaskScriptLabel";
+            this.preTaskScriptLabel.Size = new System.Drawing.Size(117, 25);
+            this.preTaskScriptLabel.TabIndex = 11;
+            this.preTaskScriptLabel.Text = "Pre-task script";
+            // 
+            // preTaskScript
+            // 
+            this.preTaskScript.Location = new System.Drawing.Point(9, 96);
+            this.preTaskScript.Margin = new System.Windows.Forms.Padding(6);
+            this.preTaskScript.Name = "preTaskScript";
+            this.preTaskScript.Size = new System.Drawing.Size(340, 29);
+            this.preTaskScript.TabIndex = 7;
+            // 
+            // preTaskScriptBrowserButton
+            // 
+            this.preTaskScriptBrowserButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.preTaskScriptBrowserButton.Image = global::RecurringIntegrationsScheduler.Properties.Resources.Folder_open_32xMD_exp;
+            this.preTaskScriptBrowserButton.Location = new System.Drawing.Point(358, 90);
+            this.preTaskScriptBrowserButton.Margin = new System.Windows.Forms.Padding(0);
+            this.preTaskScriptBrowserButton.Name = "preTaskScriptBrowserButton";
+            this.preTaskScriptBrowserButton.Size = new System.Drawing.Size(44, 48);
+            this.preTaskScriptBrowserButton.TabIndex = 8;
+            this.preTaskScriptBrowserButton.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+            this.preTaskScriptBrowserButton.UseVisualStyleBackColor = true;
+            this.preTaskScriptBrowserButton.Click += new System.EventHandler(this.PreTaskScriptBrowserButton_Click);
+            // 
+            // preUploadScriptLabel
+            // 
+            this.preUploadScriptLabel.AutoSize = true;
+            this.preUploadScriptLabel.Location = new System.Drawing.Point(6, 139);
+            this.preUploadScriptLabel.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.preUploadScriptLabel.Name = "preUploadScriptLabel";
+            this.preUploadScriptLabel.Size = new System.Drawing.Size(125, 13);
+            this.preUploadScriptLabel.TabIndex = 8;
+            this.preUploadScriptLabel.Text = "Pre-upload script";
+            // 
+            // preUploadScript
+            // 
+            this.preUploadScript.Location = new System.Drawing.Point(9, 172);
+            this.preUploadScript.Margin = new System.Windows.Forms.Padding(6);
+            this.preUploadScript.Name = "preUploadScript";
+            this.preUploadScript.Size = new System.Drawing.Size(340, 29);
+            this.preUploadScript.TabIndex = 4;
+            // 
+            // preUploadScriptBrowserButton
+            // 
+            this.preUploadScriptBrowserButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.preUploadScriptBrowserButton.Image = global::RecurringIntegrationsScheduler.Properties.Resources.Folder_open_32xMD_exp;
+            this.preUploadScriptBrowserButton.Location = new System.Drawing.Point(358, 166);
+            this.preUploadScriptBrowserButton.Margin = new System.Windows.Forms.Padding(0);
+            this.preUploadScriptBrowserButton.Name = "preUploadScriptBrowserButton";
+            this.preUploadScriptBrowserButton.Size = new System.Drawing.Size(44, 48);
+            this.preUploadScriptBrowserButton.TabIndex = 5;
+            this.preUploadScriptBrowserButton.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+            this.preUploadScriptBrowserButton.UseVisualStyleBackColor = true;
+            this.preUploadScriptBrowserButton.Click += new System.EventHandler(this.PreUploadScriptBrowserButton_Click);
+            // 
+            // postTaskScriptLabel
+            // 
+            this.postTaskScriptLabel.AutoSize = true;
+            this.postTaskScriptLabel.Location = new System.Drawing.Point(6, 214);
+            this.postTaskScriptLabel.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
+            this.postTaskScriptLabel.Name = "postTaskScriptLabel";
+            this.postTaskScriptLabel.Size = new System.Drawing.Size(117, 25);
+            this.postTaskScriptLabel.TabIndex = 11;
+            this.postTaskScriptLabel.Text = "Post-task script";
+            // 
+            // postTaskScript
+            // 
+            this.postTaskScript.Location = new System.Drawing.Point(9, 247);
+            this.postTaskScript.Margin = new System.Windows.Forms.Padding(6);
+            this.postTaskScript.Name = "postTaskScript";
+            this.postTaskScript.Size = new System.Drawing.Size(340, 29);
+            this.postTaskScript.TabIndex = 7;
+            // 
+            // postTaskScriptBrowserButton
+            // 
+            this.postTaskScriptBrowserButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+            this.postTaskScriptBrowserButton.Image = global::RecurringIntegrationsScheduler.Properties.Resources.Folder_open_32xMD_exp;
+            this.postTaskScriptBrowserButton.Location = new System.Drawing.Point(358, 241);
+            this.postTaskScriptBrowserButton.Margin = new System.Windows.Forms.Padding(0);
+            this.postTaskScriptBrowserButton.Name = "postTaskScriptBrowserButton";
+            this.postTaskScriptBrowserButton.Size = new System.Drawing.Size(44, 48);
+            this.postTaskScriptBrowserButton.TabIndex = 8;
+            this.postTaskScriptBrowserButton.TextAlign = System.Drawing.ContentAlignment.TopLeft;
+            this.postTaskScriptBrowserButton.UseVisualStyleBackColor = true;
+            this.postTaskScriptBrowserButton.Click += new System.EventHandler(this.PostTaskScriptBrowserButton_Click);
             // 
             // jobIdentificationGroupBox
             // 
@@ -2252,6 +2383,8 @@ namespace RecurringIntegrationsScheduler.Forms
             this.groupBoxExceptions.PerformLayout();
             this.jobTabControl.ResumeLayout(false);
             this.importJobOverviewTabPage.ResumeLayout(false);
+            this.scriptsGroupBox.ResumeLayout(false);
+            this.scriptsGroupBox.PerformLayout();
             this.jobIdentificationGroupBox.ResumeLayout(false);
             this.jobIdentificationGroupBox.PerformLayout();
             this.jobControlGroupBox.ResumeLayout(false);
@@ -2371,6 +2504,7 @@ namespace RecurringIntegrationsScheduler.Forms
         private System.Windows.Forms.CheckBox executeImportCheckBox;
         private System.Windows.Forms.CheckBox overwriteDataProjectCheckBox;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
+        private System.Windows.Forms.OpenFileDialog openScriptFileDialog;
         private System.Windows.Forms.GroupBox retryPolicyGroupBox;
         private System.Windows.Forms.Label delayLabel;
         private System.Windows.Forms.Label retriesLabel;
@@ -2452,5 +2586,15 @@ namespace RecurringIntegrationsScheduler.Forms
         private System.Windows.Forms.TextBox getExecutionErrorsTextBox;
         private System.Windows.Forms.GroupBox groupBoxLogging;
         private System.Windows.Forms.CheckBox verboseLoggingCheckBox;
+        private System.Windows.Forms.GroupBox scriptsGroupBox;
+        private System.Windows.Forms.Label preTaskScriptLabel;
+        private System.Windows.Forms.TextBox preTaskScript;
+        private System.Windows.Forms.Button preTaskScriptBrowserButton;
+        private System.Windows.Forms.Label preUploadScriptLabel;
+        private System.Windows.Forms.TextBox preUploadScript;
+        private System.Windows.Forms.Button preUploadScriptBrowserButton;
+        private System.Windows.Forms.Label postTaskScriptLabel;
+        private System.Windows.Forms.TextBox postTaskScript;
+        private System.Windows.Forms.Button postTaskScriptBrowserButton;
     }
 }

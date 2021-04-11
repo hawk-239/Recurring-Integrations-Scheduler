@@ -151,6 +151,12 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
             LegalEntityTokenPosition = dataMap.GetInt(SettingsConstants.LegalEntityTokenPosition);
 
             InputFilesArePackages = dataMap.GetBooleanValue(SettingsConstants.InputFilesArePackages);
+
+            PreTaskScript = dataMap.GetString(SettingsConstants.PreTaskScript);
+
+            PreUploadScript = dataMap.GetString(SettingsConstants.PreUploadScript);
+
+            PostTaskScript = dataMap.GetString(SettingsConstants.PostTaskScript);
         }
 
         #region Members
@@ -306,6 +312,24 @@ namespace RecurringIntegrationsScheduler.Common.JobSettings
         /// Input files are packages.
         /// </value>
         public bool InputFilesArePackages { get; private set; }
+
+        /// <summary>
+        /// Gets the path + file name of the PS1 script that should be executed before task is started.
+        /// </summary>
+        public string PreTaskScript { get; private set; }
+
+        /// <summary>
+        /// Gets the path + file name of PS1 script that should be executed before file packaging or package upload is started.
+        /// </summary>
+        public string PreUploadScript { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a path + file name of the PS1 script that should be executed after export task is completed.
+        /// </summary>
+        /// <value>
+        /// Delay between status checks.
+        /// </value>
+        public string PostTaskScript { get; private set; }
 
         #endregion
     }

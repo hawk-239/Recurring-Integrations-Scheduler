@@ -224,6 +224,10 @@ namespace RecurringIntegrationsScheduler.Forms
 
                 verboseLoggingCheckBox.Checked = ImportJobDetail.JobDataMap.GetBooleanValue(SettingsConstants.LogVerbose);
 
+                preTaskScript.Text = ImportJobDetail.JobDataMap.GetString(SettingsConstants.PreTaskScript);
+                preUploadScript.Text = ImportJobDetail.JobDataMap.GetString(SettingsConstants.PreUploadScript);
+                postTaskScript.Text = ImportJobDetail.JobDataMap.GetString(SettingsConstants.PostTaskScript);
+
                 Properties.Settings.Default.Save();
             }
             if ((ExecutionJobDetail != null) && (ExecutionTrigger != null))
@@ -330,7 +334,10 @@ namespace RecurringIntegrationsScheduler.Forms
                 {SettingsConstants.FilenameSeparator, filenameSeparatorTextBox.Text},
                 {SettingsConstants.LegalEntityTokenPosition, legalEntityTokenPositionNumericUpDown.Value},
                 {SettingsConstants.InputFilesArePackages, inputFilesArePackagesCheckBox.Checked},
-                {SettingsConstants.LogVerbose, verboseLoggingCheckBox.Checked}
+                {SettingsConstants.LogVerbose, verboseLoggingCheckBox.Checked},
+                {SettingsConstants.PreTaskScript, preTaskScript.Text},
+                {SettingsConstants.PreUploadScript, preUploadScript.Text},
+                {SettingsConstants.PostTaskScript, postTaskScript.Text},
             };
             if (serviceAuthRadioButton.Checked)
             {
@@ -896,6 +903,24 @@ namespace RecurringIntegrationsScheduler.Forms
                     processingErrorsFolderTextBox.Text = string.Empty;
                 }
             }
+        }
+
+        private void PreTaskScriptBrowserButton_Click(object sender, EventArgs e)
+        {
+            if (openScriptFileDialog.ShowDialog() == DialogResult.OK)
+                preTaskScript.Text = openScriptFileDialog.FileName;
+        }
+
+        private void PreUploadScriptBrowserButton_Click(object sender, EventArgs e)
+        {
+            if (openScriptFileDialog.ShowDialog() == DialogResult.OK)
+                preUploadScript.Text = openScriptFileDialog.FileName;
+        }
+
+        private void PostTaskScriptBrowserButton_Click(object sender, EventArgs e)
+        {
+            if (openScriptFileDialog.ShowDialog() == DialogResult.OK)
+                postTaskScript.Text = openScriptFileDialog.FileName;
         }
 
         #endregion

@@ -357,5 +357,15 @@ namespace RecurringIntegrationsScheduler.Common.Contracts
         /// Path + file name of the PS1 script that should be executed after task is completed
         /// </summary>
         public const string PostTaskScript = "PostTaskScript";
+
+        /// <summary>
+        /// Path + file name of the PS1 script that should be executed before task is started
+        /// </summary>
+        public const string PreTaskScript = "PreTaskScript";
+
+        /// <summary>
+        /// Path + file name of PS1 script that should be executed before file packaging or package upload is started
+        /// </summary>
+        public const string PreUploadScript = "PreUploadScript";
     }
 }

@@ -12,6 +12,7 @@ using RecurringIntegrationsScheduler.Common.JobSettings;
 using RecurringIntegrationsScheduler.Job.Properties;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -150,6 +151,10 @@ namespace RecurringIntegrationsScheduler.Job
                 }
                 Log.Error(string.Format(Resources.Job_0_thrown_an_error_1, _context.JobDetail.Key, ex.Message));
             }
+            finally
+            {
+                PowerShellHelper.ExecutePowerShellScript(_settings.PostTaskScript, new Dictionary<string, string> { ["taskFolderName"] = _settings.InputDir });
+            }
         }
 
         /// <summary>
@@ -159,6 +164,8 @@ namespace RecurringIntegrationsScheduler.Job
         /// <returns></returns>
         private async Task Process(CancellationToken cancellationToken)
         {
+            PowerShellHelper.ExecutePowerShellScript(_settings.PreTaskScript, new Dictionary<string, string> { ["taskFolderName"] = _settings.InputDir });
+
             InputQueue = new ConcurrentQueue<DataMessage>();
 
             foreach (
@@ -214,6 +221,8 @@ namespace RecurringIntegrationsScheduler.Job
                         fileCount++;
 
                         cancellationToken.ThrowIfCancellationRequested();
+
+                        PowerShellHelper.ExecutePowerShellScript(_settings.PreUploadScript, new Dictionary<string, string> { ["fileName"] = dataMessage.FullPath });
 
                         var sourceStream = await _retryPolicyForIo.Execute(() => Task.Run(() => FileOperationsHelper.Read(dataMessage.FullPath)));
 
