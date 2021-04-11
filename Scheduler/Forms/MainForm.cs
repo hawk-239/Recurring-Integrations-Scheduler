@@ -6,12 +6,14 @@ using RecurringIntegrationsScheduler.Common.Contracts;
 using RecurringIntegrationsScheduler.Properties;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace RecurringIntegrationsScheduler.Forms
@@ -32,8 +34,12 @@ namespace RecurringIntegrationsScheduler.Forms
             var timer = new Timer { Interval = 1000 };
             timer.Tick += (s, args) => RefreshGrid();
             timer.Start();
+
+            var gridType = this.jobsDataGridView.GetType();
+            var propertyInfo = gridType.GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+            propertyInfo?.SetValue(this.jobsDataGridView, true, null);
         }
-        
+
         private void RefreshGrid()
         {
             try
@@ -44,7 +50,9 @@ namespace RecurringIntegrationsScheduler.Forms
                 var jobsTable = Scheduler.Instance.GetJobs();
                 if (jobsTable == null) return;
 
-                var jobsBindingSource = new BindingSource { DataSource = jobsTable };
+                var jobsBindingSource = new BindingSource {DataSource = jobsTable};
+
+                jobsDataGridView.Parent.SuspendLayout();
 
                 jobsDataGridView.AutoGenerateColumns = false;
 
@@ -53,9 +61,43 @@ namespace RecurringIntegrationsScheduler.Forms
                 primaryKey[1] = jobsTable.Columns["JobGroup"];
                 jobsTable.PrimaryKey = primaryKey;
 
-                jobsDataGridView.DataSource = jobsTable;
+                var currentIndex = jobsDataGridView.CurrentRow?.Index;
+
+                string selectedJobName = null;
+                string selectedJobGroup = null;
+                var selectedColumnIndex = -1;
+
+                var sortColumnIndex = jobsDataGridView.Columns.IndexOf(jobsDataGridView.SortedColumn);
+                var sortOrder = jobsDataGridView.SortOrder;
+
+                if (jobsDataGridView.SelectedRows.Count > 0)
+                {
+                    selectedJobName = jobsDataGridView.SelectedRows[0].Cells["JobName"].Value.ToString();
+                    selectedJobGroup = jobsDataGridView.SelectedRows[0].Cells["JobGroup"].Value.ToString();
+                    selectedColumnIndex = jobsDataGridView.CurrentCell.ColumnIndex;
+                }
+
+
                 jobsDataGridView.DataSource = jobsBindingSource;
                 ApplyFilter();
+
+                if (sortColumnIndex > 0)
+                {
+                    jobsDataGridView.Sort(jobsDataGridView.Columns[sortColumnIndex], sortOrder == SortOrder.Ascending ? ListSortDirection.Ascending : ListSortDirection.Descending);
+                }
+
+                var row = jobsDataGridView.Rows.Cast<DataGridViewRow>().FirstOrDefault(r => r.Cells["JobName"].Value.ToString() == selectedJobName && r.Cells["JobGroup"].Value.ToString() == selectedJobGroup);
+                if (row != null)
+                {
+                    row.Selected = true;
+
+                    if (selectedColumnIndex >= 0)
+                    {
+                        row.Cells[selectedColumnIndex].Selected = true;
+                    }
+                }
+
+                jobsDataGridView.Parent.ResumeLayout();
             }
             catch (Exception ex)
             {
